@@ -166,4 +166,4 @@ if __name__ == "__main__":
 def run():
     import curses
 
-    curses.wrapper(main_menu)
+    curses.wrapper(draw_menu)
