@@ -137,16 +137,17 @@ def edit_host_ui(stdscr):
         return
 
     current_row = 0
+
     while True:
         stdscr.clear()
         stdscr.addstr("Edytuj hosta:\n", curses.A_BOLD)
 
-        # Tworzenie tabeli
+        # Tworzenie tabeli z hostami
         headers = ["ID", "Host", "HostName", "User", "Port", "IdentityFile"]
         table_data = [[idx + 1, h["Host"], h.get("HostName", ""), h.get("User", ""), h.get("Port", ""), h.get("IdentityFile", "")] for idx, h in enumerate(hosts)]
-        table_str = tabulate(table_data, headers, tablefmt="grid")
+        table_lines = tabulate(table_data, headers, tablefmt="grid").split("\n")
 
-        for idx, line in enumerate(table_str.split("\n")):
+        for idx, line in enumerate(table_lines):
             if idx == current_row + 3:  # Pomijamy nagłówki tabeli
                 stdscr.addstr(f"> {line}\n", curses.A_REVERSE)
             else:
@@ -159,14 +160,14 @@ def edit_host_ui(stdscr):
             current_row -= 1
         elif key == curses.KEY_DOWN and current_row < len(hosts) - 1:
             current_row += 1
-        elif key == 10:  # ENTER - wybór hosta do edycji
+        elif key == 10:  # ENTER - edytuj zaznaczony host
             break
         elif key == 27:  # ESC - powrót do menu
             return
 
     selected_host = hosts[current_row]
 
-    # Edycja danych hosta
+    # Przechodzimy do edycji hosta
     stdscr.clear()
     stdscr.addstr(f"Edytujesz host: {selected_host['Host']}\n\n", curses.A_BOLD)
 
