@@ -128,5 +128,36 @@ def remove_host_ui(stdscr):
     stdscr.getch()
 
 
+def connect_host_ui(stdscr):
+    stdscr.clear()
+    hosts = read_hosts(config_path)
+    if not hosts:
+        stdscr.addstr("Brak hostów w pliku config.\nWciśnij dowolny klawisz.")
+        stdscr.refresh()
+        stdscr.getch()
+        return
+
+    stdscr.addstr("Połącz z hostem:\n")
+    for idx, host in enumerate(hosts):
+        stdscr.addstr(f"  {idx + 1}. {host['Host']}\n")
+
+    stdscr.addstr("\nWybierz numer hosta: ")
+    stdscr.refresh()
+    curses.echo()
+    try:
+        choice = int(stdscr.getstr().decode("utf-8")) - 1
+        if 0 <= choice < len(hosts):
+            stdscr.addstr(f"\nŁączenie z {hosts[choice]['Host']}...\n")
+            stdscr.refresh()
+            connect_via_ssh(hosts[choice]["Host"])
+        else:
+            stdscr.addstr("\nNieprawidłowy wybór!")
+    except ValueError:
+        stdscr.addstr("\nBłąd: musisz podać numer.")
+
+    stdscr.refresh()
+    stdscr.getch()
+
+
 if __name__ == "__main__":
     curses.wrapper(draw_menu)

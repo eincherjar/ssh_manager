@@ -1,4 +1,6 @@
 import os
+import subprocess
+import platform
 
 
 def get_config_path():
@@ -64,3 +66,13 @@ def remove_entry(file_path, host_to_remove):
 
     with open(file_path, "w") as file:
         file.writelines(lines)
+
+
+def connect_via_ssh(host):
+    """Uruchamia połączenie SSH z danym hostem"""
+    ssh_command = f"ssh {host}"
+
+    if platform.system() == "Windows":
+        subprocess.run(["cmd.exe", "/c", ssh_command])
+    else:
+        subprocess.run(["/bin/bash", "-c", ssh_command])
