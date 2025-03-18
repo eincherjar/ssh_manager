@@ -162,8 +162,8 @@ def edit_host_ui(stdscr):
 
 def remove_host_ui(stdscr):
     curses.curs_set(0)
-    curses.start_color()  # 🟢 Inicjalizacja kolorów
-    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)  # 🟢 Definicja pary kolorów (biały tekst, czarne tło)
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
     hosts = read_hosts(config_path)
     if not hosts:
@@ -178,10 +178,9 @@ def remove_host_ui(stdscr):
         stdscr.clear()
         stdscr.addstr("Usuń hosta:\n", curses.A_BOLD)
 
-        # 🟢 Tworzenie tabeli z podświetleniem zaznaczonego wiersza
-        table_data = []
-        for idx, host in enumerate(hosts):
-            row = [
+        # 🟢 Tworzymy tabelę BEZ separatorów (ale dodajemy pionowe kreski ręcznie)
+        table_data = [
+            [
                 idx + 1,
                 host.get("Host", ""),
                 host.get("HostName", ""),
@@ -189,19 +188,22 @@ def remove_host_ui(stdscr):
                 host.get("Port", ""),
                 host.get("IdentityFile", ""),
             ]
-            table_data.append(row)
+            for idx, host in enumerate(hosts)
+        ]
 
-        table_str = tabulate(
-            table_data,
-            headers=["ID", "Host", "HostName", "User", "Port", "IdentityFile"],
-            tablefmt="fancy_grid",
-        ).split("\n")  # 🟢 Rozbijamy na linie, żeby podświetlać pojedyncze wiersze
+        headers = ["ID", "Host", "HostName", "User", "Port", "IdentityFile"]
+        table_lines = tabulate(table_data, headers=headers, tablefmt="plain").split("\n")
 
-        for i, line in enumerate(table_str):
-            if i == current_row + 3:  # 🟢 +3 bo tabulate dodaje nagłówek i linie separatora
-                stdscr.addstr(line + "\n", curses.color_pair(1) | curses.A_BOLD)  # 🟢 PODŚWIETL W REVERSE
+        # 🟢 Rysujemy tabelę linia po linii
+        for i, line in enumerate(table_lines):
+            formatted_line = "| " + " | ".join(line.split()) + " |"  # 🟢 Dodajemy pionowe kreski
+
+            if i == 0 or i == 1:  # Nagłówek i linia pod nim
+                stdscr.addstr(formatted_line + "\n", curses.A_BOLD)
+            elif i - 2 == current_row:  # 🟢 Podświetlony host (pomijamy nagłówek)
+                stdscr.addstr(formatted_line + "\n", curses.color_pair(1) | curses.A_BOLD)
             else:
-                stdscr.addstr(line + "\n")
+                stdscr.addstr(formatted_line + "\n")
 
         stdscr.addstr("\nStrzałki ↑ ↓ - Wybierz, ENTER - Usuń, ESC - Powrót")
         stdscr.refresh()
