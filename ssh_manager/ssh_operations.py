@@ -8,25 +8,20 @@ def get_config_path():
 
 
 def read_hosts(file_path):
+    """Wczytuje listę hostów z pliku konfiguracyjnego SSH."""
     hosts = []
     try:
         with open(file_path, "r") as file:
-            current_host = {}
             for line in file:
                 line = line.strip()
-                if line.startswith("Host "):
-                    if current_host:
-                        hosts.append(current_host)
-                    current_host = {"Host": line.split(" ", 1)[1]}
-                elif current_host:
-                    key_value = line.split(" ", 1)
-                    if len(key_value) == 2:
-                        key, value = key_value
-                        current_host[key] = value
-            if current_host:
-                hosts.append(current_host)
+                if line.lower().startswith("host "):
+                    host_name = line.split(maxsplit=1)[1]  # Pobiera nazwę hosta
+                    hosts.append({"Host": host_name})  # Przechowuje tylko nazwę hosta
     except FileNotFoundError:
         print("Plik konfiguracji SSH nie istnieje.")
+    except Exception as e:
+        print(f"Błąd podczas odczytu pliku: {e}")
+
     return hosts
 
 
@@ -76,3 +71,14 @@ def connect_via_ssh(host):
         subprocess.run(["cmd.exe", "/c", ssh_command])
     else:
         subprocess.run(["/bin/bash", "-c", ssh_command])
+
+
+def change_config_path():
+    """Pozwala użytkownikowi zmienić ścieżkę do pliku konfiguracyjnego SSH."""
+    new_path = input("Podaj nową ścieżkę do pliku SSH config: ").strip()
+
+    if os.path.isfile(new_path):
+        return new_path  # Zwracamy nową ścieżkę
+    else:
+        print("Błąd: Plik nie istnieje. Spróbuj ponownie.")
+        return None  # Jeśli plik nie istnieje, zwracamy None

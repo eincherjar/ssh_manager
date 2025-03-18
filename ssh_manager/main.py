@@ -1,7 +1,7 @@
 import os
 import platform
 import curses
-from ssh_manager.ssh_operations import get_config_path, read_hosts, add_entry, update_entry, remove_entry, connect_via_ssh
+from ssh_manager.ssh_operations import get_config_path, read_hosts, add_entry, update_entry, remove_entry, connect_via_ssh, change_config_path
 
 config_path = get_config_path()
 
@@ -14,8 +14,15 @@ def draw_menu(stdscr):
         stdscr.clear()
         stdscr.addstr("  === Menedżer Konfiguracji SSH ===\n", curses.A_BOLD)
         stdscr.addstr(f"  Aktualny plik: {config_path} \n", curses.A_DIM)
-        stdscr.addstr("  Wybierz opcję:\n\n")
 
+        # 🔥 Dodajemy listę hostów przed menu
+        hosts = read_hosts(config_path)
+        if hosts:
+            stdscr.addstr("\n  >>> Lista hostów <<<\n", curses.A_UNDERLINE)
+            for idx, host in enumerate(hosts, start=1):
+                stdscr.addstr(f"    {idx}. {host['Host']}\n")
+
+        stdscr.addstr("\n  Wybierz opcję:\n\n")
         menu_options = ["Dodaj nowy host", "Edytuj hosta", "Usuń hosta", "Połącz z hostem", "Podaj nową ścieżkę do config", "Wyjście"]
 
         for idx, option in enumerate(menu_options):
@@ -31,7 +38,7 @@ def draw_menu(stdscr):
             current_row -= 1
         elif key == curses.KEY_DOWN and current_row < len(menu_options) - 1:
             current_row += 1
-        elif key in [10, 13]:
+        elif key in [10, 13]:  # Enter
             if current_row == 0:
                 add_host_ui(stdscr)
             elif current_row == 1:
@@ -41,7 +48,10 @@ def draw_menu(stdscr):
             elif current_row == 3:
                 connect_host_ui(stdscr)
             elif current_row == 4:
-                change_config_path(stdscr)
+                new_path = change_config_path()  # Pobieramy nową ścieżkę z `ssh_operations.py`
+                if new_path:
+                    global config_path
+                    config_path = new_path
             elif current_row == 5:
                 break
 
