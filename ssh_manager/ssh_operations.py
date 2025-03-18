@@ -73,15 +73,21 @@ def update_entry(file_path, old_host, new_host=None, new_host_name=None, new_use
                 continue
 
             if inside_target_host:
+                # Zmiana lub usunięcie istniejących pól
                 if stripped_line.startswith("HostName "):
-                    updated_host_block.append(f"    HostName {new_host_name}\n" if new_host_name else line)
+                    if new_host_name:
+                        updated_host_block.append(f"    HostName {new_host_name}\n")
                 elif stripped_line.startswith("User "):
-                    updated_host_block.append(f"    User {new_user}\n" if new_user else line)
+                    if new_user is not None:  # Pozwala na usunięcie User
+                        updated_host_block.append(f"    User {new_user}\n") if new_user else None
                 elif stripped_line.startswith("Port "):
-                    updated_host_block.append(f"    Port {new_port}\n" if new_port else line)
+                    if new_port is not None:  # Pozwala na usunięcie Port
+                        updated_host_block.append(f"    Port {new_port}\n") if new_port else None
                 elif stripped_line.startswith("IdentityFile "):
-                    updated_host_block.append(f"    IdentityFile {new_identity_file}\n" if new_identity_file else line)
+                    if new_identity_file is not None:  # Pozwala na usunięcie IdentityFile
+                        updated_host_block.append(f"    IdentityFile {new_identity_file}\n") if new_identity_file else None
                 elif stripped_line == "":
+                    # Jeśli pole nie istniało wcześniej i użytkownik podał wartość, dodajemy je
                     if new_host_name and not any("HostName " in l for l in updated_host_block):
                         updated_host_block.append(f"    HostName {new_host_name}\n")
                     if new_user and not any("User " in l for l in updated_host_block):
@@ -90,8 +96,12 @@ def update_entry(file_path, old_host, new_host=None, new_host_name=None, new_use
                         updated_host_block.append(f"    Port {new_port}\n")
                     if new_identity_file and not any("IdentityFile " in l for l in updated_host_block):
                         updated_host_block.append(f"    IdentityFile {new_identity_file}\n")
-                    updated_host_block.append("\n")
-                    lines.extend(updated_host_block)
+
+                    # Tylko jeśli są jakiekolwiek ustawienia dla hosta, dodajemy go do pliku
+                    if len(updated_host_block) > 1:
+                        updated_host_block.append("\n")
+                        lines.extend(updated_host_block)
+
                     inside_target_host = False
                 else:
                     updated_host_block.append(line)
@@ -108,8 +118,10 @@ def update_entry(file_path, old_host, new_host=None, new_host_name=None, new_use
             updated_host_block.append(f"    Port {new_port}\n")
         if new_identity_file and not any("IdentityFile " in l for l in updated_host_block):
             updated_host_block.append(f"    IdentityFile {new_identity_file}\n")
-        updated_host_block.append("\n")
-        lines.extend(updated_host_block)
+
+        if len(updated_host_block) > 1:  # Tylko jeśli są jakieś ustawienia dla hosta
+            updated_host_block.append("\n")
+            lines.extend(updated_host_block)
 
     with open(file_path, "w") as file:
         file.writelines(lines)
@@ -155,7 +167,7 @@ def change_config_path():
 
 
 def get_user_input(stdscr, prompt, default=""):
-    """Pobiera wejście od użytkownika w trybie curses. Umożliwia edycję i usuwanie wartości."""
+    """Pobiera wejście od użytkownika w trybie curses. Pozwala usunąć wartość."""
     stdscr.addstr(prompt)
     stdscr.addstr(f" ({default}): ", curses.A_DIM)
     stdscr.refresh()
@@ -164,4 +176,5 @@ def get_user_input(stdscr, prompt, default=""):
     input_str = stdscr.getstr().decode("utf-8").strip()
     curses.noecho()
 
+    # Jeśli użytkownik nic nie wpisze i wciśnie ENTER, zwracamy None (usunięcie wartości)
     return input_str if input_str != "" else None
