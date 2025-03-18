@@ -156,22 +156,23 @@ def change_config_path():
 
 def get_user_input(stdscr, prompt, default=""):
     """Pozwala edytować istniejącą wartość, usunąć ją lub pozostawić bez zmian"""
-    stdscr.addstr("\n" + prompt + ": ")  # Przesunięcie na nową linię
+    stdscr.addstr("\n" + prompt + ": ")  # Wyświetlamy labelkę
     stdscr.refresh()
 
-    input_str = list(default)  # Domyślny tekst jako lista znaków (można modyfikować)
+    input_str = list(default)  # Domyślny tekst jako lista znaków (można edytować)
     cursor_x = len(input_str)  # Pozycja kursora
 
     while True:
-        stdscr.clrtoeol()  # 🔹 Czyści całą linię, aby uniknąć bałaganu
-        stdscr.addstr("".join(input_str) + " ")  # 🔹 Rysuje aktualny input
-        stdscr.move(stdscr.getyx()[0], cursor_x)  # 🔹 Przesuwa kursor we właściwe miejsce
+        stdscr.move(stdscr.getyx()[0], len(prompt) + 2)  # 🔹 Przesuwamy kursor za labelkę
+        stdscr.clrtoeol()  # 🔹 Czyścimy tylko wartość, nie labelkę
+        stdscr.addstr("".join(input_str))  # 🔹 Rysujemy wpisywany tekst
+        stdscr.move(stdscr.getyx()[0], len(prompt) + 2 + cursor_x)  # 🔹 Ustawiamy kursor w odpowiednim miejscu
         stdscr.refresh()
 
         key = stdscr.getch()
 
         if key in [10, 13]:  # ENTER = akceptacja wartości
-            return "".join(input_str).strip() if input_str else None  # None = usuń wpis
+            return "".join(input_str).strip() if input_str else None  # None = usunięcie wpisu
         elif key in [curses.KEY_BACKSPACE, 127, 8]:  # BACKSPACE
             if cursor_x > 0:
                 cursor_x -= 1
