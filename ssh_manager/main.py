@@ -7,6 +7,7 @@ config_path = get_config_path()
 
 
 def draw_menu(stdscr):
+    global config_path
     curses.curs_set(0)
     current_row = 0
 
@@ -48,7 +49,6 @@ def draw_menu(stdscr):
             elif current_row == 3:
                 connect_host_ui(stdscr)
             elif current_row == 4:
-                global config_path  # Deklarujemy globalną zmienną na początku
                 new_path = change_config_path()
                 if new_path:
                     config_path = new_path  # Teraz można ją bezpiecznie przypisać
