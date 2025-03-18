@@ -163,17 +163,17 @@ def get_user_input(stdscr, prompt, default=""):
     cursor_x = len(input_str)  # Pozycja kursora
 
     while True:
-        stdscr.move(stdscr.getyx()[0], len(prompt) + 2)  # 🔹 Przesuwamy kursor za labelkę
-        stdscr.clrtoeol()  # 🔹 Czyścimy tylko wartość, nie labelkę
-        stdscr.addstr("".join(input_str))  # 🔹 Rysujemy wpisywany tekst
-        stdscr.move(stdscr.getyx()[0], len(prompt) + 2 + cursor_x)  # 🔹 Ustawiamy kursor w odpowiednim miejscu
+        stdscr.move(stdscr.getyx()[0], len(prompt) + 2)  # Przesuwamy kursor za labelkę
+        stdscr.clrtoeol()  # Czyścimy tylko wartość, nie labelkę
+        stdscr.addstr("".join(input_str))  # Rysujemy wpisywany tekst
+        stdscr.move(stdscr.getyx()[0], len(prompt) + 2 + cursor_x)  # Ustawiamy kursor w odpowiednim miejscu
         stdscr.refresh()
 
         key = stdscr.getch()
 
         if key in [10, 13]:  # ENTER = akceptacja wartości
             # Jeżeli input_str jest pusty po edycji, zwrócimy None
-            return "".join(input_str).strip() if input_str else None
+            return "".join(input_str).strip() if "".join(input_str).strip() else None
         elif key in [curses.KEY_BACKSPACE, 127, 8]:  # BACKSPACE
             if cursor_x > 0:
                 cursor_x -= 1
