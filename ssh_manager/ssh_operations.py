@@ -75,27 +75,20 @@ def update_entry(file_path, old_host, new_host=None, new_host_name=None, new_use
             if inside_target_host:
                 # Zaktualizuj lub usuń odpowiednie wpisy
                 if stripped_line.startswith("HostName "):
-                    if new_host_name is not None:  # Sprawdź, czy użytkownik podał nową wartość
-                        updated_host_block.append(f"    HostName {new_host_name}\n")
-                    else:  # Jeśli nie podał wartości, nie dodajemy tej linii
-                        continue
+                    updated_host_block.append(f"    HostName {new_host_name}\n" if new_host_name else "")
                 elif stripped_line.startswith("User "):
-                    if new_user is not None:  # Sprawdź, czy użytkownik podał nową wartość
-                        updated_host_block.append(f"    User {new_user}\n")
-                    else:  # Jeśli nie podał wartości, nie dodajemy tej linii
-                        continue
+                    updated_host_block.append(f"    User {new_user}\n" if new_user else "")
                 elif stripped_line.startswith("Port "):
-                    if new_port is not None:  # Sprawdź, czy użytkownik podał nową wartość
-                        updated_host_block.append(f"    Port {new_port}\n")
-                    else:  # Jeśli nie podał wartości, nie dodajemy tej linii
-                        continue
+                    updated_host_block.append(f"    Port {new_port}\n" if new_port else "")
                 elif stripped_line.startswith("IdentityFile "):
-                    if new_identity_file is not None and new_identity_file != "":  # Sprawdź, czy użytkownik podał wartość
+                    # Jeśli new_identity_file jest pustym ciągiem, to usuwamy tę linię
+                    if new_identity_file:
                         updated_host_block.append(f"    IdentityFile {new_identity_file}\n")
-                    else:  # Jeśli wartość jest pusta, usuwamy linię
+                    else:
+                        # Jeśli new_identity_file jest pusty, nie dodajemy tej linii
                         continue
-                elif stripped_line == "":  # Zakończenie edycji sekcji danego hosta
-                    # Dodajemy brakujące linie, jeśli nie zostały jeszcze dodane
+                elif stripped_line == "":
+                    # Zakończenie edycji sekcji danego hosta
                     if new_host_name and not any("HostName " in l for l in updated_host_block):
                         updated_host_block.append(f"    HostName {new_host_name}\n")
                     if new_user and not any("User " in l for l in updated_host_block):
