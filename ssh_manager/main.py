@@ -184,11 +184,11 @@ def edit_host_ui(stdscr):
             stdscr.clear()
             stdscr.addstr(f"Edytujesz host: {selected_host['Host']}\n\n", curses.A_BOLD)
 
-            new_host = get_user_input(stdscr, "Nowa nazwa Host (ENTER = bez zmian): ", default=selected_host["Host"])
+            new_host = get_user_input(stdscr, "Nowy Host", selected_host["Host"])
             new_hostname = get_user_input(stdscr, "Nowy HostName", selected_host.get("HostName", ""))
-            new_user = get_user_input(stdscr, "Nowy User", selected_host.get("User", ""))
-            new_port = get_user_input(stdscr, "Nowy Port", selected_host.get("Port", ""))
-            new_identity_file = get_user_input(stdscr, "Nowa ścieżka do klucza", selected_host.get("IdentityFile", ""))
+            new_user = get_user_input(stdscr, "Nowy użytkownik", selected_host.get("User", ""))
+            new_port = get_user_input(stdscr, "Nowy port", selected_host.get("Port", ""))
+            new_identity_file = get_user_input(stdscr, "Nowa ścieżka IdentityFile", selected_host.get("IdentityFile", ""))
 
             update_entry(config_path, selected_host["Host"], new_host, new_hostname, new_user, new_port, new_identity_file)
 

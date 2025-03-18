@@ -155,7 +155,7 @@ def change_config_path():
 
 
 def get_user_input(stdscr, prompt, default=""):
-    """Pobiera wejście od użytkownika w trybie curses"""
+    """Pobiera wejście od użytkownika w trybie curses. Umożliwia edycję i usuwanie wartości."""
     stdscr.addstr(prompt)
     stdscr.addstr(f" ({default}): ", curses.A_DIM)
     stdscr.refresh()
@@ -164,4 +164,4 @@ def get_user_input(stdscr, prompt, default=""):
     input_str = stdscr.getstr().decode("utf-8").strip()
     curses.noecho()
 
-    return input_str if input_str else default
+    return input_str if input_str != "" else None
