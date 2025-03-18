@@ -165,8 +165,14 @@ def connect_via_ssh(host):
                 print(f"Nie znaleziono pliku klucza: {identity_file}")
                 return
 
-        # Uruchomienie komendy SSH
-        subprocess.run(ssh_command)
+        # Uruchomienie komendy SSH z Popen
+        process = subprocess.Popen(ssh_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+
+        if stdout:
+            print(stdout.decode())
+        if stderr:
+            print(stderr.decode())
 
     except Exception as e:
         print(f"Błąd podczas łączenia z {host['Host']}: {e}")
