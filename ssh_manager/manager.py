@@ -320,10 +320,10 @@ def main():
         elif choice == "4":
             connect_via_ssh(file_path)
         elif choice == "5":
-            file_path = input("Podaj ścieżkę do pliku konfiguracyjnego (lub 0, aby wrócić): ")
-            if file_path == "0":
+            new_file_path = input("Podaj ścieżkę do pliku konfiguracyjnego (lub 0, aby wrócić): ")
+            if new_file_path == "0":
                 continue  # Powrót do menu
-            load_and_display_hosts(file_path)
+            load_and_display_hosts(new_file_path)
         elif choice == "0":
             break
         else:
