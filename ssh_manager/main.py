@@ -48,10 +48,10 @@ def draw_menu(stdscr):
             elif current_row == 3:
                 connect_host_ui(stdscr)
             elif current_row == 4:
-                new_path = change_config_path()  # Pobieramy nową ścieżkę z `ssh_operations.py`
+                global config_path  # Deklarujemy globalną zmienną na początku
+                new_path = change_config_path()
                 if new_path:
-                    global config_path
-                    config_path = new_path
+                    config_path = new_path  # Teraz można ją bezpiecznie przypisać
             elif current_row == 5:
                 break
 
