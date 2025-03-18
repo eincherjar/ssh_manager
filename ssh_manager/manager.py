@@ -268,7 +268,7 @@ def main():
             remove_entry(file_path)
         elif choice == "4":
             file_path = input("Podaj ścieżkę do pliku konfiguracyjnego (lub 0, aby wrócić): ")
-            if choice == "0":
+            if file_path == "0":
                 return  # Powrót do menu
             load_and_display_hosts(file_path)
         elif choice == "0":
