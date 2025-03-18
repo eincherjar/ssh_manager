@@ -16,12 +16,43 @@ def draw_menu(stdscr):
         stdscr.addstr("  === Menedżer Konfiguracji SSH ===\n", curses.A_BOLD)
         stdscr.addstr(f"  Aktualny plik: {config_path} \n", curses.A_DIM)
 
-        # 🔥 Dodajemy listę hostów przed menu
         hosts = read_hosts(config_path)
+
         if hosts:
             stdscr.addstr("\n  >>> Lista hostów <<<\n", curses.A_UNDERLINE)
+
+            # Nagłówki tabeli
+            columns = ["ID", "Host", "HostName", "User", "Port", "IdentityFile"]
+            padding = 2  # Padding 2 spacje
+            min_width = 6  # Minimalna szerokość kolumn
+
+            # Obliczanie szerokości kolumn
+            col_widths = {col: max(len(col), min_width) for col in columns}  # Start od nagłówków
+
             for idx, host in enumerate(hosts, start=1):
-                stdscr.addstr(f"    {idx}. {host['Host']}\n")
+                col_widths["ID"] = max(col_widths["ID"], len(str(idx)))
+                col_widths["Host"] = max(col_widths["Host"], len(host.get("Host", "-")))
+                col_widths["HostName"] = max(col_widths["HostName"], len(host.get("HostName", "-")))
+                col_widths["User"] = max(col_widths["User"], len(host.get("User", "-")))
+                col_widths["Port"] = max(col_widths["Port"], len(host.get("Port", "-")))
+                col_widths["IdentityFile"] = max(col_widths["IdentityFile"], len(host.get("IdentityFile", "-")))
+
+            # Dodanie paddingu do szerokości kolumn
+            for col in col_widths:
+                col_widths[col] += padding * 2
+
+            # Formatowanie wiersza nagłówków
+            header = "|".join(f" {col:^{col_widths[col] - 2}} " for col in columns)
+            stdscr.addstr(f"  {header}\n", curses.A_BOLD)
+
+            # Separator
+            separator = "+".join("-" * col_widths[col] for col in columns)
+            stdscr.addstr(f"  {separator}\n")
+
+            # Wiersze tabeli
+            for idx, host in enumerate(hosts, start=1):
+                row = "|".join(f" {str(host.get(col, '-') if col != 'ID' else idx):<{col_widths[col] - 2}} " for col in columns)
+                stdscr.addstr(f"  {row}\n")
 
         stdscr.addstr("\n  Wybierz opcję:\n\n")
         menu_options = ["Dodaj nowy host", "Edytuj hosta", "Usuń hosta", "Połącz z hostem", "Podaj nową ścieżkę do config", "Wyjście"]
@@ -51,7 +82,7 @@ def draw_menu(stdscr):
             elif current_row == 4:
                 new_path = change_config_path()
                 if new_path:
-                    config_path = new_path  # Teraz można ją bezpiecznie przypisać
+                    config_path = new_path
             elif current_row == 5:
                 break
 

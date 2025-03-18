@@ -8,15 +8,32 @@ def get_config_path():
 
 
 def read_hosts(file_path):
-    """Wczytuje listę hostów z pliku konfiguracyjnego SSH."""
+    """Wczytuje listę hostów z pliku konfiguracyjnego SSH wraz z dodatkowymi parametrami."""
     hosts = []
+    current_host = {}
+
     try:
         with open(file_path, "r") as file:
             for line in file:
                 line = line.strip()
-                if line.lower().startswith("host "):
-                    host_name = line.split(maxsplit=1)[1]  # Pobiera nazwę hosta
-                    hosts.append({"Host": host_name})  # Przechowuje tylko nazwę hosta
+
+                if line.lower().startswith("host "):  # Nowy host
+                    if current_host:  # Jeśli istnieje poprzedni host, dodajemy go do listy
+                        hosts.append(current_host)
+                    current_host = {"Host": line.split(maxsplit=1)[1]}  # Resetujemy dla nowego hosta
+                elif current_host:  # Pobieramy dodatkowe parametry
+                    if line.lower().startswith("hostname "):
+                        current_host["HostName"] = line.split(maxsplit=1)[1]
+                    elif line.lower().startswith("user "):
+                        current_host["User"] = line.split(maxsplit=1)[1]
+                    elif line.lower().startswith("port "):
+                        current_host["Port"] = line.split(maxsplit=1)[1]
+                    elif line.lower().startswith("identityfile "):
+                        current_host["IdentityFile"] = line.split(maxsplit=1)[1]
+
+            if current_host:  # Dodaj ostatni host
+                hosts.append(current_host)
+
     except FileNotFoundError:
         print("Plik konfiguracji SSH nie istnieje.")
     except Exception as e:
