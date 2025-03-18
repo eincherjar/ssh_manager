@@ -172,7 +172,8 @@ def get_user_input(stdscr, prompt, default=""):
         key = stdscr.getch()
 
         if key in [10, 13]:  # ENTER = akceptacja wartości
-            return "".join(input_str).strip() if input_str else None  # ⬅️ Jeśli puste, zwróć `None`
+            # Jeżeli input_str jest pusty po edycji, zwrócimy None
+            return "".join(input_str).strip() if input_str else None
         elif key in [curses.KEY_BACKSPACE, 127, 8]:  # BACKSPACE
             if cursor_x > 0:
                 cursor_x -= 1
