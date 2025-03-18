@@ -2,6 +2,7 @@ import re
 import os
 import platform
 import getpass
+import subprocess
 
 
 # Funkcja do uzyskania ścieżki do pliku konfiguracyjnego
@@ -185,6 +186,55 @@ def remove_entry(file_path):
     load_and_display_hosts(file_path)
 
 
+def connect_via_ssh(file_path):
+    hosts_data = []
+    with open(file_path, "r") as file:
+        current_host = []
+        for line in file:
+            if line.strip():
+                if line.strip().startswith("Host "):
+                    if current_host:
+                        hosts_data.append(current_host)
+                    current_host = [line]
+                else:
+                    current_host.append(line)
+        if current_host:
+            hosts_data.append(current_host)
+
+    print("\nDostępne hosty do połączenia:")
+    for idx, host_lines in enumerate(hosts_data, start=1):
+        print(f"{idx}. {host_lines[0].strip()}")
+
+    print("0. Powrót do menu")
+
+    try:
+        choice = input("\nWybierz numer hosta do połączenia (lub 0, aby wrócić): ")
+        if choice == "0":
+            return  # Powrót do menu
+
+        choice = int(choice)
+        if 1 <= choice <= len(hosts_data):
+            selected_host = hosts_data[choice - 1]
+            host_dict = {}
+
+            for line in selected_host:
+                key_value = line.strip().split(maxsplit=1)
+                if len(key_value) == 2:
+                    key, value = key_value
+                    host_dict[key] = value
+
+            ssh_command = f"ssh {host_dict.get('Host')}"
+            print(f"\nŁączenie z {host_dict.get('Host')}...")
+
+            # Uruchomienie SSH
+            subprocess.run(ssh_command, shell=True)
+
+        else:
+            print("Nieprawidłowy wybór.")
+    except ValueError:
+        print("Wprowadź numer hosta.")
+
+
 # Funkcja do załadowania i wyświetlenia hostów
 def load_and_display_hosts(file_path):
     # Słownik do przechowywania danych Hostów
@@ -271,6 +321,8 @@ def main():
             if file_path == "0":
                 continue  # Powrót do menu
             load_and_display_hosts(file_path)
+        elif choice == "5":
+            connect_via_ssh(file_path)
         elif choice == "0":
             break
         else:
