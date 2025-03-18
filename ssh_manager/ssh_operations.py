@@ -2,6 +2,7 @@ import os
 import subprocess
 import platform
 import curses
+import shutil
 
 
 def get_config_path():
@@ -142,12 +143,30 @@ def remove_entry(file_path, host_to_remove):
 
 def connect_via_ssh(host):
     """Uruchamia połączenie SSH z danym hostem"""
+    # Sprawdzanie, czy ssh jest dostępne w systemie
+    if shutil.which("ssh") is None:
+        print("Błąd: Klient SSH nie jest dostępny w systemie.")
+        return
+
     ssh_command = f"ssh {host}"
 
-    if platform.system() == "Windows":
-        subprocess.run(["cmd.exe", "/c", ssh_command])
-    else:
-        subprocess.run(["/bin/bash", "-c", ssh_command])
+    try:
+        # Jeśli system to Windows, spróbuj użyć PowerShell lub WSL
+        if platform.system() == "Windows":
+            # Jeśli masz zainstalowany WSL, użyj go
+            if shutil.which("wsl"):
+                subprocess.run(["wsl", "ssh", host], check=True)
+            else:
+                # Użyj PowerShell w przypadku nowszych wersji Windows
+                subprocess.run(["powershell", "-Command", ssh_command], check=True)
+        else:
+            # W przypadku systemów Unix/Linux/MacOS, uruchamiamy standardowe polecenie SSH
+            subprocess.run(ssh_command, shell=True, check=True)
+
+    except subprocess.CalledProcessError as e:
+        print(f"Błąd podczas łączenia: {e}")
+    except Exception as e:
+        print(f"Wystąpił nieoczekiwany błąd: {e}")
 
 
 def change_config_path():
