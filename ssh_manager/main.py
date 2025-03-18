@@ -162,25 +162,27 @@ def edit_host_ui(stdscr):
 
 def remove_host_ui(stdscr):
     curses.curs_set(0)
-    hosts = read_hosts(config_path)
+    curses.start_color()  # 🟢 Inicjalizacja kolorów
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)  # 🟢 Definicja pary kolorów (biały tekst, czarne tło)
 
+    hosts = read_hosts(config_path)
     if not hosts:
         stdscr.addstr("Brak hostów w pliku config.\nWciśnij dowolny klawisz.")
         stdscr.refresh()
         stdscr.getch()
         return
 
-    current_row = 0  # 🟢 Zmienna do śledzenia pozycji
+    current_row = 0
 
     while True:
         stdscr.clear()
         stdscr.addstr("Usuń hosta:\n", curses.A_BOLD)
 
-        # 🟢 Przygotowanie tabeli hostów
+        # 🟢 Tworzenie tabeli z podświetleniem zaznaczonego wiersza
         table_data = []
         for idx, host in enumerate(hosts):
             row = [
-                f"> {idx + 1}" if idx == current_row else f"  {idx + 1}",
+                idx + 1,
                 host.get("Host", ""),
                 host.get("HostName", ""),
                 host.get("User", ""),
@@ -193,9 +195,13 @@ def remove_host_ui(stdscr):
             table_data,
             headers=["ID", "Host", "HostName", "User", "Port", "IdentityFile"],
             tablefmt="fancy_grid",
-        )
+        ).split("\n")  # 🟢 Rozbijamy na linie, żeby podświetlać pojedyncze wiersze
 
-        stdscr.addstr(table_str + "\n")
+        for i, line in enumerate(table_str):
+            if i == current_row + 3:  # 🟢 +3 bo tabulate dodaje nagłówek i linie separatora
+                stdscr.addstr(line + "\n", curses.color_pair(1) | curses.A_BOLD)  # 🟢 PODŚWIETL W REVERSE
+            else:
+                stdscr.addstr(line + "\n")
 
         stdscr.addstr("\nStrzałki ↑ ↓ - Wybierz, ENTER - Usuń, ESC - Powrót")
         stdscr.refresh()
@@ -207,10 +213,10 @@ def remove_host_ui(stdscr):
             current_row += 1
         elif key in [10, 13]:  # ENTER = usuń hosta
             remove_entry(config_path, hosts[current_row]["Host"])
-            hosts = read_hosts(config_path)  # 🟢 Odśwież listę
-            if current_row >= len(hosts):  # 🟢 Uniknięcie wyjścia poza listę
+            hosts = read_hosts(config_path)
+            if current_row >= len(hosts):
                 current_row = max(0, len(hosts) - 1)
-        elif key == 27:  # 🟢 ESC - powrót do menu
+        elif key == 27:  # ESC - powrót do menu
             break
 
 
