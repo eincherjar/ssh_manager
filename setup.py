@@ -5,5 +5,5 @@ setup(
     version="1.0.0",
     packages=find_packages(),
     install_requires=[],
-    entry_points={"console_scripts": ["ssh-manager=__main__:main"]},
+    entry_points={"console_scripts": ["ssh-manager=ssh_manager.__main__:main"]},
 )
