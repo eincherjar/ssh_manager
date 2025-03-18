@@ -150,7 +150,7 @@ def connect_via_ssh(host):
         print(f"Łączenie z {host['Host']} ({host['HostName']})...")
 
         # Przygotowanie komendy SSH
-        ssh_command = ["ssh", f"{host['User']}@{host['HostName']}"]
+        ssh_command = ["ssh", "-T", f"{host['User']}@{host['HostName']}"]
 
         # Dodajemy opcjonalnie port, jeśli jest dostępny
         if "Port" in host:
@@ -165,14 +165,8 @@ def connect_via_ssh(host):
                 print(f"Nie znaleziono pliku klucza: {identity_file}")
                 return
 
-        # Uruchomienie komendy SSH z Popen
-        process = subprocess.Popen(ssh_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = process.communicate()
-
-        if stdout:
-            print(stdout.decode())
-        if stderr:
-            print(stderr.decode())
+        # Uruchomienie komendy SSH
+        subprocess.run(ssh_command)
 
     except Exception as e:
         print(f"Błąd podczas łączenia z {host['Host']}: {e}")
