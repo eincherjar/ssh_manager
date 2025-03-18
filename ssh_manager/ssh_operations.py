@@ -149,8 +149,8 @@ def connect_via_ssh(host):
     try:
         print(f"Łączenie z {host['Host']} ({host['HostName']})...")
 
-        # Przygotowanie komendy SSH z odpowiednimi flagami
-        ssh_command = ["ssh", "-T", "-q", "-n", f"{host['User']}@{host['HostName']}"]
+        # Przygotowanie komendy SSH
+        ssh_command = ["ssh", f"{host['User']}@{host['HostName']}"]
 
         # Dodajemy opcjonalnie port, jeśli jest dostępny
         if "Port" in host:
@@ -165,13 +165,8 @@ def connect_via_ssh(host):
                 print(f"Nie znaleziono pliku klucza: {identity_file}")
                 return
 
-        # Ustawiamy zmienną TERM na xterm
-        env = os.environ.copy()
-        env["TERM"] = "xterm-256color"  # Wyłącz kolorowanie, jeśli to problem
-        env["LANG"] = "C.UTF-8"  # Ustawienie ustawień językowych na neutralne (w przypadku problemów z kodowaniem)
-
-        # Uruchomienie komendy SSH
-        subprocess.run(ssh_command, env=env, check=True)
+        # Uruchomienie komendy SSH w trybie interaktywnym
+        subprocess.run(ssh_command, check=True)
 
     except subprocess.CalledProcessError as e:
         print(f"Błąd podczas łączenia z {host['Host']}: {e}")
