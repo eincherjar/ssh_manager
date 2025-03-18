@@ -55,13 +55,28 @@ def add_entry(file_path, host, host_name, user=None, port=None, identity_file=No
             file.write(f"    IdentityFile {identity_file}\n")
 
 
-def update_entry(file_path, old_host, new_host_name):
+def update_entry(file_path, old_host, new_host_name, new_user=None, new_port=None, new_identity_file=None):
     lines = []
+    inside_target_host = False
+
     with open(file_path, "r") as file:
         for line in file:
-            if line.strip().startswith("Host ") and old_host in line:
+            stripped_line = line.strip()
+
+            if stripped_line.startswith("Host ") and old_host in stripped_line:
+                inside_target_host = True
                 lines.append(line)
+            elif inside_target_host and stripped_line.startswith("HostName "):
                 lines.append(f"    HostName {new_host_name}\n")
+            elif inside_target_host and new_user and stripped_line.startswith("User "):
+                lines.append(f"    User {new_user}\n")
+            elif inside_target_host and new_port and stripped_line.startswith("Port "):
+                lines.append(f"    Port {new_port}\n")
+            elif inside_target_host and new_identity_file and stripped_line.startswith("IdentityFile "):
+                lines.append(f"    IdentityFile {new_identity_file}\n")
+            elif stripped_line == "":
+                inside_target_host = False
+                lines.append(line)
             else:
                 lines.append(line)
 
