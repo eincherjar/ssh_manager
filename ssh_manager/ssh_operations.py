@@ -156,25 +156,26 @@ def change_config_path():
 
 def get_user_input(stdscr, prompt, default=""):
     """Pozwala edytować istniejącą wartość, usunąć ją lub pozostawić bez zmian"""
-    stdscr.addstr(prompt + ": ")
+    stdscr.addstr("\n" + prompt + ": ")  # Przesunięcie na nową linię
     stdscr.refresh()
 
     input_str = list(default)  # Domyślny tekst jako lista znaków (można modyfikować)
     cursor_x = len(input_str)  # Pozycja kursora
 
     while True:
-        stdscr.addstr(1, 0, "".join(input_str) + " ")  # Rysowanie inputu + dodatkowa spacja do kasowania resztek
-        stdscr.move(1, cursor_x)  # Przesunięcie kursora
+        stdscr.clrtoeol()  # 🔹 Czyści całą linię, aby uniknąć bałaganu
+        stdscr.addstr("".join(input_str) + " ")  # 🔹 Rysuje aktualny input
+        stdscr.move(stdscr.getyx()[0], cursor_x)  # 🔹 Przesuwa kursor we właściwe miejsce
         stdscr.refresh()
 
         key = stdscr.getch()
 
         if key in [10, 13]:  # ENTER = akceptacja wartości
             return "".join(input_str).strip() if input_str else None  # None = usuń wpis
-        elif key in [curses.KEY_BACKSPACE, 127, 8]:  # Obsługa BACKSPACE
+        elif key in [curses.KEY_BACKSPACE, 127, 8]:  # BACKSPACE
             if cursor_x > 0:
                 cursor_x -= 1
                 input_str.pop(cursor_x)
-        elif 32 <= key <= 126:  # Normalne znaki ASCII (spacje, litery, cyfry, itp.)
+        elif 32 <= key <= 126:  # Normalne znaki ASCII
             input_str.insert(cursor_x, chr(key))
             cursor_x += 1
