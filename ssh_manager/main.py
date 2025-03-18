@@ -138,7 +138,7 @@ def edit_host_ui(stdscr):
         stdscr.getch()
         return
 
-    valid_rows = list(range(len(hosts)))  # Lista rzeczywistych hostów (bez separatorów)
+    valid_rows = list(range(len(hosts)))  # Indeksy hostów (bez separatorów)
     selected_idx = 0  # Wybrany host (po indeksie w valid_rows)
 
     while True:
@@ -185,15 +185,31 @@ def edit_host_ui(stdscr):
 
             stdscr.clear()
             stdscr.addstr(f"Edytujesz host: {selected_host['Host']}\n")
-            stdscr.addstr("Nowy adres HostName: ")
+
+            # Pobieranie nowych wartości
+            stdscr.addstr("Nowy HostName (ENTER = bez zmian): ")
             stdscr.refresh()
             curses.echo()
-            new_hostname = stdscr.getstr().decode("utf-8")
+            new_hostname = stdscr.getstr().decode("utf-8").strip() or selected_host.get("HostName", "")
 
-            update_entry(config_path, selected_host["Host"], new_hostname)
+            stdscr.addstr("Nowy User (ENTER = bez zmian): ")
+            stdscr.refresh()
+            new_user = stdscr.getstr().decode("utf-8").strip() or selected_host.get("User", "")
 
-            hosts = read_hosts(config_path)  # Odświeżamy listę
-            valid_rows = list(range(len(hosts)))  # Aktualizujemy indeksy
+            stdscr.addstr("Nowy Port (ENTER = bez zmian): ")
+            stdscr.refresh()
+            new_port = stdscr.getstr().decode("utf-8").strip() or selected_host.get("Port", "")
+
+            stdscr.addstr("Nowa ścieżka do klucza (ENTER = bez zmian): ")
+            stdscr.refresh()
+            new_identity_file = stdscr.getstr().decode("utf-8").strip() or selected_host.get("IdentityFile", "")
+
+            # Aktualizacja wpisu
+            update_entry(config_path, selected_host["Host"], new_hostname, new_user, new_port, new_identity_file)
+
+            # Odświeżamy listę hostów
+            hosts = read_hosts(config_path)
+            valid_rows = list(range(len(hosts)))  # Aktualizacja indeksów
             selected_idx = min(selected_idx, len(valid_rows) - 1)
         elif key == 27:  # ESC - powrót do menu
             break
