@@ -89,18 +89,41 @@ def draw_menu(stdscr):
 
 def add_host_ui(stdscr):
     stdscr.clear()
-    stdscr.addstr("Dodawanie nowego hosta:\n")
+    stdscr.addstr("Dodawanie nowego hosta (ESC, aby wrócić):\n", curses.A_BOLD)
+
+    curses.echo()  # Włącz echo do wprowadzania tekstu
+
+    # Pobieranie wartości
     stdscr.addstr("Podaj nazwę hosta: ")
-    stdscr.refresh()
-    curses.echo()
-    host = stdscr.getstr().decode("utf-8")
+    host = stdscr.getstr().decode("utf-8").strip()
+    if host.lower() == "esc":  # Opcja wyjścia
+        return
 
     stdscr.addstr("Podaj adres hosta (HostName): ")
-    stdscr.refresh()
-    host_name = stdscr.getstr().decode("utf-8")
+    host_name = stdscr.getstr().decode("utf-8").strip()
+    if host_name.lower() == "esc":
+        return
 
-    add_entry(config_path, host, host_name)
-    stdscr.addstr("\nHost został dodany! Wciśnij dowolny klawisz, aby wrócić.\n")
+    stdscr.addstr("Podaj użytkownika (Enter = pomiń): ")
+    user = stdscr.getstr().decode("utf-8").strip() or None  # Opcjonalne
+    if user and user.lower() == "esc":
+        return
+
+    stdscr.addstr("Podaj port (Enter = pomiń): ")
+    port = stdscr.getstr().decode("utf-8").strip()
+    port = port if port.isdigit() else None  # Opcjonalne, sprawdzamy czy to liczba
+    if port and port.lower() == "esc":
+        return
+
+    stdscr.addstr("Podaj ścieżkę do klucza (Enter = ~/.ssh/id_rsa.pub): ")
+    identity_file = stdscr.getstr().decode("utf-8").strip() or "~/.ssh/id_rsa.pub"
+    if identity_file.lower() == "esc":
+        return
+
+    # Dodanie wpisu
+    add_entry(config_path, host, host_name, user, port, identity_file)
+
+    stdscr.addstr("\n✅ Host został dodany! Wciśnij dowolny klawisz, aby wrócić.\n")
     stdscr.refresh()
     stdscr.getch()
 

@@ -42,10 +42,16 @@ def read_hosts(file_path):
     return hosts
 
 
-def add_entry(file_path, host, host_name):
+def add_entry(file_path, host, host_name, user=None, port=None, identity_file=None):
     with open(file_path, "a") as file:
         file.write(f"\nHost {host}\n")
         file.write(f"    HostName {host_name}\n")
+        if user:
+            file.write(f"    User {user}\n")
+        if port:
+            file.write(f"    Port {port}\n")
+        if identity_file:
+            file.write(f"    IdentityFile {identity_file}\n")
 
 
 def update_entry(file_path, old_host, new_host_name):
