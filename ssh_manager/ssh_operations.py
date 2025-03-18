@@ -150,11 +150,11 @@ def connect_via_ssh(host):
         print(f"Łączenie z {host['Host']} ({host['HostName']})...")
 
         # Przygotowanie komendy SSH
-        ssh_command = ["ssh", "-T", "-n", f"{host['User']}@{host['HostName']}"]
+        ssh_command = ["ssh", "-T", f"{host['User']}@{host['HostName']}"]
 
         # Dodajemy opcjonalnie port, jeśli jest dostępny
         if "Port" in host:
-            ssh_command.extend(["-p", str(host["Port"])])
+            ssh_command.extend(["-p", host["Port"]])
 
         # Dodajemy opcję klucza prywatnego, jeśli jest dostępna
         if "IdentityFile" in host:
@@ -166,15 +166,7 @@ def connect_via_ssh(host):
                 return
 
         # Uruchomienie komendy SSH
-        process = subprocess.Popen(ssh_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        # Odczytujemy standardowe wyjście i błąd
-        stdout, stderr = process.communicate()
-
-        if stdout:
-            print(stdout.decode())
-        if stderr:
-            print(stderr.decode())
+        subprocess.run(ssh_command, shell=True)
 
     except Exception as e:
         print(f"Błąd podczas łączenia z {host['Host']}: {e}")
