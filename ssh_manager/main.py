@@ -172,16 +172,17 @@ def remove_host_ui(stdscr):
         stdscr.getch()
         return
 
-    current_row = 0
+    valid_rows = list(range(len(hosts)))  # Lista rzeczywistych hostów (bez separatorów)
+    selected_idx = 0  # Wybrany host (po indeksie w valid_rows)
 
     while True:
         stdscr.clear()
         stdscr.addstr("Usuń hosta:\n", curses.A_BOLD)
 
-        # 🟢 Tworzymy tabelę BEZ separatorów (ale dodajemy pionowe kreski ręcznie)
+        # Tworzymy listę danych hostów
         table_data = [
             [
-                idx + 1,
+                idx + 1,  # ID zaczyna się od 1
                 host.get("Host", ""),
                 host.get("HostName", ""),
                 host.get("User", ""),
@@ -192,32 +193,32 @@ def remove_host_ui(stdscr):
         ]
 
         headers = ["ID", "Host", "HostName", "User", "Port", "IdentityFile"]
-        table_lines = tabulate(table_data, headers=headers, tablefmt="plain").split("\n")
+        table_lines = tabulate(table_data, headers=headers, tablefmt="fancy_grid").split("\n")
 
-        # 🟢 Rysujemy tabelę linia po linii
+        row_counter = -2  # Pomijamy 2 pierwsze wiersze (nagłówki)
         for i, line in enumerate(table_lines):
-            formatted_line = "| " + " | ".join(line.split()) + " |"  # 🟢 Dodajemy pionowe kreski
-
-            if i == 0 or i == 1:  # Nagłówek i linia pod nim
-                stdscr.addstr(formatted_line + "\n", curses.A_BOLD)
-            elif i - 2 == current_row:  # 🟢 Podświetlony host (pomijamy nagłówek)
-                stdscr.addstr(formatted_line + "\n", curses.color_pair(1) | curses.A_BOLD)
+            if "─" in line or "═" in line:  # To separator, nie zaznaczamy
+                stdscr.addstr(line + "\n", curses.A_DIM)
             else:
-                stdscr.addstr(formatted_line + "\n")
+                row_counter += 1
+                if row_counter == valid_rows[selected_idx]:  # Podświetlenie TYLKO hostów
+                    stdscr.addstr(line + "\n", curses.color_pair(1) | curses.A_BOLD)
+                else:
+                    stdscr.addstr(line + "\n")
 
         stdscr.addstr("\nStrzałki ↑ ↓ - Wybierz, ENTER - Usuń, ESC - Powrót")
         stdscr.refresh()
 
         key = stdscr.getch()
-        if key == curses.KEY_UP and current_row > 0:
-            current_row -= 1
-        elif key == curses.KEY_DOWN and current_row < len(hosts) - 1:
-            current_row += 1
+        if key == curses.KEY_UP and selected_idx > 0:
+            selected_idx -= 1
+        elif key == curses.KEY_DOWN and selected_idx < len(valid_rows) - 1:
+            selected_idx += 1
         elif key in [10, 13]:  # ENTER = usuń hosta
-            remove_entry(config_path, hosts[current_row]["Host"])
-            hosts = read_hosts(config_path)
-            if current_row >= len(hosts):
-                current_row = max(0, len(hosts) - 1)
+            remove_entry(config_path, hosts[valid_rows[selected_idx]]["Host"])
+            hosts = read_hosts(config_path)  # Odświeżamy listę
+            valid_rows = list(range(len(hosts)))  # Aktualizujemy indeksy
+            selected_idx = min(selected_idx, len(valid_rows) - 1)
         elif key == 27:  # ESC - powrót do menu
             break
 
