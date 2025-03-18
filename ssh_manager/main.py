@@ -161,57 +161,42 @@ def edit_host_ui(stdscr):
 
 
 def remove_host_ui(stdscr):
-    stdscr.clear()
+    curses.curs_set(0)
     hosts = read_hosts(config_path)
 
     if not hosts:
-        stdscr.addstr("Brak hostów w pliku config.\n")
-        stdscr.addstr("Naciśnij dowolny klawisz, aby wrócić do menu.")
+        stdscr.addstr("Brak hostów w pliku config.\nWciśnij dowolny klawisz.")
         stdscr.refresh()
         stdscr.getch()
         return
 
-    current_row = 0
+    current_row = 0  # 🟢 Aktualnie wybrany host
 
     while True:
         stdscr.clear()
-        stdscr.addstr("Usuń hosta (ESC = Powrót):\n", curses.A_BOLD)
+        stdscr.addstr("Usuń hosta:\n", curses.A_BOLD)
 
-        # Tworzymy dane do tabeli
-        table_data = []
         for idx, host in enumerate(hosts):
-            table_data.append(
-                [
-                    idx + 1,
-                    host.get("Host", "-"),
-                    host.get("HostName", "-"),
-                    host.get("User", "-"),
-                    host.get("Port", "-"),
-                    host.get("IdentityFile", "-"),
-                ]
-            )
+            if idx == current_row:
+                stdscr.addstr(f"  > {idx + 1}. {host['Host']}\n", curses.A_REVERSE)
+            else:
+                stdscr.addstr(f"    {idx + 1}. {host['Host']}\n")
 
-        # Tworzymy tabelę
-        table_str = tabulate(table_data, headers=["ID", "Host", "HostName", "User", "Port", "IdentityFile"], tablefmt="grid")
-
-        # Wyświetlamy tabelę
-        stdscr.addstr(table_str + "\n")
-
-        stdscr.addstr("\nPoruszaj się strzałkami ↑↓, Enter = Usuń, ESC = Powrót\n", curses.A_DIM)
-
+        stdscr.addstr("\nStrzałki ↑ ↓ - Wybierz, ENTER - Usuń, Q - Powrót")
         stdscr.refresh()
 
         key = stdscr.getch()
-
         if key == curses.KEY_UP and current_row > 0:
             current_row -= 1
         elif key == curses.KEY_DOWN and current_row < len(hosts) - 1:
             current_row += 1
-        elif key in [10, 13]:  # Enter - usuwa wybranego hosta
+        elif key in [10, 13]:  # ENTER = usuń hosta
             remove_entry(config_path, hosts[current_row]["Host"])
-            return  # Po usunięciu wraca do menu
-        elif key == 27:  # ESC - Powrót do menu
-            return
+            hosts = read_hosts(config_path)  # 🟢 Odśwież listę
+            if current_row >= len(hosts):  # 🟢 Zapobiega wyjściu poza listę
+                current_row = max(0, len(hosts) - 1)
+        elif key in [ord("q"), ord("Q")]:  # 🟢 Powrót do menu
+            break
 
 
 def connect_host_ui(stdscr):
