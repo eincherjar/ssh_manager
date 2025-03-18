@@ -96,7 +96,7 @@ def add_host_ui(stdscr):
     # Pobieranie wartości
     stdscr.addstr("Podaj nazwę hosta: ")
     host = stdscr.getstr().decode("utf-8").strip()
-    if host.lower() == "esc":  # Opcja wyjścia
+    if host.lower() == "esc":
         return
 
     stdscr.addstr("Podaj adres hosta (HostName): ")
@@ -105,27 +105,24 @@ def add_host_ui(stdscr):
         return
 
     stdscr.addstr("Podaj użytkownika (Enter = pomiń): ")
-    user = stdscr.getstr().decode("utf-8").strip() or None  # Opcjonalne
+    user = stdscr.getstr().decode("utf-8").strip() or None
     if user and user.lower() == "esc":
         return
 
     stdscr.addstr("Podaj port (Enter = pomiń): ")
     port = stdscr.getstr().decode("utf-8").strip()
-    port = port if port.isdigit() else None  # Opcjonalne, sprawdzamy czy to liczba
+    port = port if port.isdigit() else None
     if port and port.lower() == "esc":
         return
 
-    stdscr.addstr("Podaj ścieżkę do klucza (Enter = ~/.ssh/id_rsa.pub): ")
-    identity_file = stdscr.getstr().decode("utf-8").strip() or "~/.ssh/id_rsa.pub"
+    stdscr.addstr("Podaj ścieżkę do klucza (Enter = pomiń, domyślny: ~/.ssh/id_rsa.pub): ")
+    identity_file = stdscr.getstr().decode("utf-8").strip()
     if identity_file.lower() == "esc":
         return
+    identity_file = identity_file or None  # Jeśli puste, nie dodajemy tego pola
 
-    # Dodanie wpisu
+    # Dodanie wpisu i powrót do menu
     add_entry(config_path, host, host_name, user, port, identity_file)
-
-    stdscr.addstr("\n✅ Host został dodany! Wciśnij dowolny klawisz, aby wrócić.\n")
-    stdscr.refresh()
-    stdscr.getch()
 
 
 def edit_host_ui(stdscr):
