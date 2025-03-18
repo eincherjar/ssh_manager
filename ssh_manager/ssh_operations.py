@@ -156,7 +156,7 @@ def connect_via_ssh(host):
         if "Port" in host:
             ssh_command.extend(["-p", host["Port"]])
 
-        # Dodajemy opcję klucza prywatnego
+        # Dodajemy opcję klucza prywatnego, jeśli jest dostępna
         if "IdentityFile" in host:
             identity_file = os.path.expanduser(host["IdentityFile"])
             if os.path.exists(identity_file):

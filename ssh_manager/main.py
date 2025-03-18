@@ -264,8 +264,7 @@ def remove_host_ui(stdscr):
 
 def connect_host_ui(stdscr):
     stdscr.clear()
-    config_path = os.path.expanduser("~/.ssh/config")
-    hosts = read_hosts(config_path)
+    hosts = read_hosts(config_path)  # Pobieramy dane hostów z pliku
 
     if not hosts:
         stdscr.addstr("Brak hostów w pliku config.\nWciśnij dowolny klawisz.")
@@ -289,25 +288,7 @@ def connect_host_ui(stdscr):
             stdscr.addstr(f"\nŁączenie z {selected_host['Host']}...\n")
             stdscr.refresh()
 
-            # Pobranie danych logowania (opcjonalnie)
-            stdscr.addstr(f"Podaj użytkownika (domyślnie: {selected_host.get('User', 'root')}): ")
-            stdscr.refresh()
-            curses.echo()
-            user_input = stdscr.getstr().decode("utf-8").strip()
-            user = user_input if user_input else selected_host.get("User", "root")
-
-            # Pobranie portu (opcjonalnie)
-            stdscr.addstr(f"Podaj port (domyślnie: {selected_host.get('Port', 22)}): ")
-            stdscr.refresh()
-            curses.echo()
-            port_input = stdscr.getstr().decode("utf-8").strip()
-            port = int(port_input) if port_input else selected_host.get("Port", 22)
-
-            # Przygotowanie danych do połączenia
-            selected_host["User"] = user
-            selected_host["Port"] = port
-
-            # Połączenie przez SSH
+            # Łączymy się przez SSH za pomocą danych z wybranego hosta
             connect_via_ssh(selected_host)
         else:
             stdscr.addstr("\nNieprawidłowy wybór!\n")
