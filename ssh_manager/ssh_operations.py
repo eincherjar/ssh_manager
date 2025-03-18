@@ -141,7 +141,7 @@ def remove_entry(file_path, host_to_remove):
         file.writelines(lines)
 
 
-def connect_via_ssh(user, hostname, port=None):
+def connect_via_ssh(host, user=None, port=None):
     """Uruchamia połączenie SSH z danym hostem (hostname), użytkownikiem (user) i opcjonalnym portem (port)."""
 
     # Sprawdzanie, czy ssh jest dostępne w systemie
@@ -150,20 +150,21 @@ def connect_via_ssh(user, hostname, port=None):
         return
 
     # Tworzymy podstawową komendę SSH
-    ssh_command = f"ssh {user}@{hostname}"
+    ssh_command = f"ssh {user}@{host}" if user else f"ssh {host}"
 
     # Dodajemy port, jeśli jest podany
     if port:
         ssh_command += f" -p {port}"
 
     try:
-        # Jeśli system to Windows, spróbuj użyć PowerShell lub WSL
+        # Jeśli system to Windows
         if platform.system() == "Windows":
             # Jeśli masz zainstalowany WSL, użyj go
             if shutil.which("wsl"):
-                subprocess.run(["wsl", "ssh", f"{user}@{hostname}", "-p", str(port)] if port else ["wsl", "ssh", f"{user}@{hostname}"], check=True)
+                # Uruchomienie SSH przez WSL
+                subprocess.run(["wsl", "ssh", f"{user}@{host}", "-p", str(port)] if port else ["wsl", "ssh", f"{user}@{host}"], check=True)
             else:
-                # Użyj PowerShell w przypadku nowszych wersji Windows
+                # Jeśli nie ma WSL, użyj PowerShell
                 subprocess.run(["powershell", "-Command", ssh_command], check=True)
         else:
             # W przypadku systemów Unix/Linux/MacOS, uruchamiamy standardowe polecenie SSH

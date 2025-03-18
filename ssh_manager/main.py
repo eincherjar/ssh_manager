@@ -265,6 +265,7 @@ def remove_host_ui(stdscr):
 def connect_host_ui(stdscr):
     stdscr.clear()
     hosts = read_hosts(config_path)
+
     if not hosts:
         stdscr.addstr("Brak hostów w pliku config.\nWciśnij dowolny klawisz.")
         stdscr.refresh()
@@ -278,16 +279,37 @@ def connect_host_ui(stdscr):
     stdscr.addstr("\nWybierz numer hosta: ")
     stdscr.refresh()
     curses.echo()
+
     try:
+        # Odczytanie numeru hosta
         choice = int(stdscr.getstr().decode("utf-8")) - 1
         if 0 <= choice < len(hosts):
-            stdscr.addstr(f"\nŁączenie z {hosts[choice]['Host']}...\n")
+            selected_host = hosts[choice]
+            stdscr.addstr(f"\nŁączenie z {selected_host['Host']}...\n")
             stdscr.refresh()
-            connect_via_ssh(hosts[choice]["Host"])
+
+            # Pobranie danych logowania (opcjonalnie)
+            stdscr.addstr(f"Podaj użytkownika (domyślnie: {selected_host.get('User', 'root')}): ")
+            stdscr.refresh()
+            curses.echo()
+            user_input = stdscr.getstr().decode("utf-8").strip()
+            user = user_input if user_input else selected_host.get("User", "root")
+
+            # Pobranie portu (opcjonalnie)
+            stdscr.addstr(f"Podaj port (domyślnie: {selected_host.get('Port', 22)}): ")
+            stdscr.refresh()
+            curses.echo()
+            port_input = stdscr.getstr().decode("utf-8").strip()
+            port = int(port_input) if port_input else selected_host.get("Port", 22)
+
+            # Połączenie przez SSH
+            connect_via_ssh(selected_host["Host"], user, port)
         else:
-            stdscr.addstr("\nNieprawidłowy wybór!")
+            stdscr.addstr("\nNieprawidłowy wybór!\n")
     except ValueError:
-        stdscr.addstr("\nBłąd: musisz podać numer.")
+        stdscr.addstr("\nBłąd: musisz podać numer.\n")
+    except Exception as e:
+        stdscr.addstr(f"\nWystąpił błąd: {e}\n")
 
     stdscr.refresh()
     stdscr.getch()
