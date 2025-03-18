@@ -186,8 +186,10 @@ def get_user_input(stdscr, prompt, default=""):
         key = stdscr.getch()
 
         if key in [10, 13]:  # ENTER = akceptacja wartości
-            # Jeśli input_str jest pusty po edycji, zwróć domyślną wartość
-            return "".join(input_str).strip() if "".join(input_str).strip() else default
+            input_val = "".join(input_str).strip()  # Zwracamy wartość z usuniętymi spacjami
+            if input_val == "":  # Jeśli pole jest puste, zwracamy pusty ciąg
+                return ""
+            return input_val  # Jeśli użytkownik wprowadził coś, zwracamy nową wartość
         elif key in [curses.KEY_BACKSPACE, 127, 8]:  # BACKSPACE
             if cursor_x > 0:
                 cursor_x -= 1
