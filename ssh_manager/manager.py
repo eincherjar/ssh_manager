@@ -68,6 +68,7 @@ def load_and_display_hosts(file_path):
             hosts_data.append(current_host)
 
     print("\nLista hostów:\n")
+    print(hosts_data)
     for idx, host in enumerate(hosts_data, start=1):
         print(f"{idx}. {host['Host']} - {host.get('HostName', '')}")
 
