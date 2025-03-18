@@ -1,8 +1,9 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name="ssh-manager",
     version="1.0.0",
-    py_modules=["ssh_manager"],
-    entry_points={"console_scripts": ["ssh-manager=ssh_manager:main"]},
+    packages=find_packages(),
+    install_requires=[],
+    entry_points={"console_scripts": ["ssh-manager=ssh_manager.__main__:main"]},
 )
