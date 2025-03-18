@@ -161,3 +161,9 @@ def connect_host_ui(stdscr):
 
 if __name__ == "__main__":
     curses.wrapper(draw_menu)
+
+
+def run():
+    import curses
+
+    curses.wrapper(main_menu)
