@@ -150,7 +150,7 @@ def connect_via_ssh(host):
         print(f"Łączenie z {host['Host']} ({host['HostName']})...")
 
         # Przygotowanie komendy SSH
-        ssh_command = ["ssh", "-T", f"{host['User']}@{host['HostName']}"]
+        ssh_command = ["ssh", f"{host['User']}@{host['HostName']}"]
 
         # Dodajemy opcjonalnie port, jeśli jest dostępny
         if "Port" in host:
