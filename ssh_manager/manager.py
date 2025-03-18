@@ -306,7 +306,8 @@ def main():
         print("1. Utwórz nowe")
         print("2. Edytuj hosta")
         print("3. Usuń hosta")
-        print("4. Podaj ścieżkę do innego pliku config")
+        print("4. Połącz z hostem")
+        print("5. Podaj ścieżkę do innego pliku config")
         print("0. Zakończ")
         choice = input("Wybierz opcję:  ")
 
@@ -317,12 +318,12 @@ def main():
         elif choice == "3":
             remove_entry(file_path)
         elif choice == "4":
+            connect_via_ssh(file_path)
+        elif choice == "5":
             file_path = input("Podaj ścieżkę do pliku konfiguracyjnego (lub 0, aby wrócić): ")
             if file_path == "0":
                 continue  # Powrót do menu
             load_and_display_hosts(file_path)
-        elif choice == "5":
-            connect_via_ssh(file_path)
         elif choice == "0":
             break
         else:
