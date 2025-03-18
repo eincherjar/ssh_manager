@@ -127,7 +127,10 @@ def add_host_ui(stdscr):
 
 
 def edit_host_ui(stdscr):
-    stdscr.clear()
+    curses.curs_set(0)
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+
     hosts = read_hosts(config_path)
     if not hosts:
         stdscr.addstr("Brak hostów w pliku config.\nWciśnij dowolny klawisz.")
@@ -135,29 +138,65 @@ def edit_host_ui(stdscr):
         stdscr.getch()
         return
 
-    stdscr.addstr("Edytuj hosta:\n")
-    for idx, host in enumerate(hosts):
-        stdscr.addstr(f"  {idx + 1}. {host['Host']}\n")
+    valid_rows = list(range(len(hosts)))  # Lista rzeczywistych hostów (bez separatorów)
+    selected_idx = 0  # Wybrany host (po indeksie w valid_rows)
 
-    stdscr.addstr("\nWybierz numer hosta: ")
-    stdscr.refresh()
-    curses.echo()
-    try:
-        choice = int(stdscr.getstr().decode("utf-8")) - 1
-        if 0 <= choice < len(hosts):
-            selected_host = hosts[choice]
-            stdscr.addstr(f"\nNowy adres dla {selected_host['Host']}: ")
+    while True:
+        stdscr.clear()
+        stdscr.addstr("Edytuj hosta:\n", curses.A_BOLD)
+
+        # Tworzymy listę danych hostów
+        table_data = [
+            [
+                idx + 1,  # ID zaczyna się od 1
+                host.get("Host", ""),
+                host.get("HostName", ""),
+                host.get("User", ""),
+                host.get("Port", ""),
+                host.get("IdentityFile", ""),
+            ]
+            for idx, host in enumerate(hosts)
+        ]
+
+        headers = ["ID", "Host", "HostName", "User", "Port", "IdentityFile"]
+        table_lines = tabulate(table_data, headers=headers, tablefmt="fancy_grid").split("\n")
+
+        row_counter = -2  # Pomijamy 2 pierwsze wiersze (nagłówki)
+        for i, line in enumerate(table_lines):
+            if "─" in line or "═" in line:  # To separator, nie zaznaczamy
+                stdscr.addstr(line + "\n", curses.A_DIM)
+            else:
+                row_counter += 1
+                if row_counter == valid_rows[selected_idx]:  # Podświetlenie TYLKO hostów
+                    stdscr.addstr(line + "\n", curses.color_pair(1) | curses.A_BOLD)
+                else:
+                    stdscr.addstr(line + "\n")
+
+        stdscr.addstr("\nStrzałki ↑ ↓ - Wybierz, ENTER - Edytuj, ESC - Powrót")
+        stdscr.refresh()
+
+        key = stdscr.getch()
+        if key == curses.KEY_UP and selected_idx > 0:
+            selected_idx -= 1
+        elif key == curses.KEY_DOWN and selected_idx < len(valid_rows) - 1:
+            selected_idx += 1
+        elif key in [10, 13]:  # ENTER = edytuj hosta
+            selected_host = hosts[valid_rows[selected_idx]]
+
+            stdscr.clear()
+            stdscr.addstr(f"Edytujesz host: {selected_host['Host']}\n")
+            stdscr.addstr("Nowy adres HostName: ")
             stdscr.refresh()
+            curses.echo()
             new_hostname = stdscr.getstr().decode("utf-8")
-            update_entry(config_path, selected_host["Host"], new_hostname)
-            stdscr.addstr("\nHost został zaktualizowany! Wciśnij dowolny klawisz.")
-        else:
-            stdscr.addstr("\nNieprawidłowy wybór!")
-    except ValueError:
-        stdscr.addstr("\nBłąd: musisz podać numer.")
 
-    stdscr.refresh()
-    stdscr.getch()
+            update_entry(config_path, selected_host["Host"], new_hostname)
+
+            hosts = read_hosts(config_path)  # Odświeżamy listę
+            valid_rows = list(range(len(hosts)))  # Aktualizujemy indeksy
+            selected_idx = min(selected_idx, len(valid_rows) - 1)
+        elif key == 27:  # ESC - powrót do menu
+            break
 
 
 def remove_host_ui(stdscr):
