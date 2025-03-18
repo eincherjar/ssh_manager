@@ -264,6 +264,7 @@ def remove_host_ui(stdscr):
 
 def connect_host_ui(stdscr):
     stdscr.clear()
+    config_path = os.path.expanduser("~/.ssh/config")
     hosts = read_hosts(config_path)
 
     if not hosts:
@@ -302,8 +303,12 @@ def connect_host_ui(stdscr):
             port_input = stdscr.getstr().decode("utf-8").strip()
             port = int(port_input) if port_input else selected_host.get("Port", 22)
 
+            # Przygotowanie danych do połączenia
+            selected_host["User"] = user
+            selected_host["Port"] = port
+
             # Połączenie przez SSH
-            connect_via_ssh(selected_host["Host"], user, port)
+            connect_via_ssh(selected_host)
         else:
             stdscr.addstr("\nNieprawidłowy wybór!\n")
     except ValueError:

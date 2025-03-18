@@ -141,39 +141,35 @@ def remove_entry(file_path, host_to_remove):
         file.writelines(lines)
 
 
-def connect_via_ssh(host, user=None, port=None):
-    """Uruchamia połączenie SSH z danym hostem (hostname), użytkownikiem (user) i opcjonalnym portem (port)."""
-
-    # Sprawdzanie, czy ssh jest dostępne w systemie
-    if shutil.which("ssh") is None:
-        print("Błąd: Klient SSH nie jest dostępny w systemie.")
-        return
-
-    # Tworzymy podstawową komendę SSH
-    ssh_command = f"ssh {user}@{host}" if user else f"ssh {host}"
-
-    # Dodajemy port, jeśli jest podany
-    if port:
-        ssh_command += f" -p {port}"
-
+def connect_via_ssh(host):
+    """
+    Łączy się przez SSH z wybranym hostem, używając danych z wczytanego słownika.
+    Wykorzystuje narzędzie ssh dostępne w systemie.
+    """
     try:
-        # Jeśli system to Windows
-        if platform.system() == "Windows":
-            # Jeśli masz zainstalowany WSL, użyj go
-            if shutil.which("wsl"):
-                # Uruchomienie SSH przez WSL
-                subprocess.run(["wsl", "ssh", f"{user}@{host}", "-p", str(port)] if port else ["wsl", "ssh", f"{user}@{host}"], check=True)
-            else:
-                # Jeśli nie ma WSL, użyj PowerShell
-                subprocess.run(["powershell", "-Command", ssh_command], check=True)
-        else:
-            # W przypadku systemów Unix/Linux/MacOS, uruchamiamy standardowe polecenie SSH
-            subprocess.run(ssh_command, shell=True, check=True)
+        print(f"Łączenie z {host['Host']} ({host['HostName']})...")
 
-    except subprocess.CalledProcessError as e:
-        print(f"Błąd podczas łączenia: {e}")
+        # Przygotowanie komendy SSH
+        ssh_command = ["ssh", f"{host['User']}@{host['HostName']}"]
+
+        # Dodajemy opcjonalnie port, jeśli jest dostępny
+        if "Port" in host:
+            ssh_command.extend(["-p", host["Port"]])
+
+        # Dodajemy opcję klucza prywatnego
+        if "IdentityFile" in host:
+            identity_file = os.path.expanduser(host["IdentityFile"])
+            if os.path.exists(identity_file):
+                ssh_command.extend(["-i", identity_file])
+            else:
+                print(f"Nie znaleziono pliku klucza: {identity_file}")
+                return
+
+        # Uruchomienie komendy SSH
+        subprocess.run(ssh_command)
+
     except Exception as e:
-        print(f"Wystąpił nieoczekiwany błąd: {e}")
+        print(f"Błąd podczas łączenia z {host['Host']}: {e}")
 
 
 def change_config_path():
