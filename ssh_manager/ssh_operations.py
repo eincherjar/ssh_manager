@@ -141,21 +141,21 @@ def remove_entry(file_path, host_to_remove):
         file.writelines(lines)
 
 
-def connect_via_ssh(host):
-    """Uruchamia połączenie SSH z danym hostem"""
+def connect_via_ssh(hostname):
+    """Uruchamia połączenie SSH z danym hostem (hostname)"""
     # Sprawdzanie, czy ssh jest dostępne w systemie
     if shutil.which("ssh") is None:
         print("Błąd: Klient SSH nie jest dostępny w systemie.")
         return
 
-    ssh_command = f"ssh {host}"
+    ssh_command = f"ssh {hostname}"
 
     try:
         # Jeśli system to Windows, spróbuj użyć PowerShell lub WSL
         if platform.system() == "Windows":
             # Jeśli masz zainstalowany WSL, użyj go
             if shutil.which("wsl"):
-                subprocess.run(["wsl", "ssh", host], check=True)
+                subprocess.run(["wsl", "ssh", hostname], check=True)
             else:
                 # Użyj PowerShell w przypadku nowszych wersji Windows
                 subprocess.run(["powershell", "-Command", ssh_command], check=True)
