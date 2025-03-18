@@ -162,30 +162,37 @@ def edit_host_ui(stdscr):
 def remove_host_ui(stdscr):
     stdscr.clear()
     hosts = read_hosts(config_path)
+
     if not hosts:
-        stdscr.addstr("Brak hostów w pliku config.\nWciśnij dowolny klawisz.")
+        stdscr.addstr("Brak hostów w pliku config.\n")
+        stdscr.addstr("Naciśnij dowolny klawisz, aby wrócić do menu.")
         stdscr.refresh()
         stdscr.getch()
         return
 
-    stdscr.addstr("Usuń hosta:\n")
-    for idx, host in enumerate(hosts):
-        stdscr.addstr(f"  {idx + 1}. {host['Host']}\n")
+    current_row = 0  # Indeks zaznaczonego hosta
 
-    stdscr.addstr("\nWybierz numer hosta do usunięcia: ")
-    stdscr.refresh()
-    curses.echo()
-    try:
-        choice = int(stdscr.getstr().decode("utf-8")) - 1
-        if 0 <= choice < len(hosts):
-            remove_entry(config_path, hosts[choice]["Host"])
-            stdscr.addstr("\nHost został usunięty! Wciśnij dowolny klawisz.")
-        else:
-            stdscr.addstr("\nNieprawidłowy wybór!")
-    except ValueError:
-        stdscr.addstr("\nBłąd: musisz podać numer.")
+    while True:
+        stdscr.clear()
+        stdscr.addstr("Usuń hosta (ESC = Powrót):\n", curses.A_BOLD)
 
-    stdscr.refresh()
+        for idx, host in enumerate(hosts):
+            prefix = "> " if idx == current_row else "  "
+            stdscr.addstr(f"{prefix}{idx + 1}. {host['Host']}\n", curses.A_REVERSE if idx == current_row else curses.A_NORMAL)
+
+        stdscr.refresh()
+
+        key = stdscr.getch()
+
+        if key == curses.KEY_UP and current_row > 0:
+            current_row -= 1
+        elif key == curses.KEY_DOWN and current_row < len(hosts) - 1:
+            current_row += 1
+        elif key in [10, 13]:  # Enter - usuwa wybrany host
+            remove_entry(config_path, hosts[current_row]["Host"])
+            return  # Po usunięciu wraca do menu
+        elif key == 27:  # ESC - Powrót do menu
+            return
     stdscr.getch()
 
 
