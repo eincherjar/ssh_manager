@@ -105,3 +105,9 @@ def change_config_path():
     else:
         print("Błąd: Plik nie istnieje. Spróbuj ponownie.")
         return None  # Jeśli plik nie istnieje, zwracamy None
+
+
+def input_with_default(prompt, default_value):
+    """Pobiera input od użytkownika z możliwością pozostawienia wartości domyślnej."""
+    user_input = input(f"{prompt} (ENTER = {default_value}): ").strip()
+    return user_input if user_input else default_value
