@@ -64,7 +64,7 @@ def update_entry(file_path, old_host, new_host=None, new_host_name=None, new_use
         for line in file:
             stripped_line = line.strip()
 
-            # Znaleziono początek sekcji Host
+            # Jeśli znajdziesz sekcję Host, sprawdź, czy to jest host, który chcesz zaktualizować
             if stripped_line.startswith("Host ") and old_host in stripped_line:
                 if inside_target_host and updated_host_block:
                     lines.extend(updated_host_block)
@@ -81,7 +81,7 @@ def update_entry(file_path, old_host, new_host=None, new_host_name=None, new_use
                     updated_host_block.append(f"    Port {new_port}\n" if new_port else line)
                 elif stripped_line.startswith("IdentityFile "):
                     updated_host_block.append(f"    IdentityFile {new_identity_file}\n" if new_identity_file else line)
-                elif stripped_line == "":
+                elif stripped_line == "":  # Po zakończeniu bloku hosta, dodaj nową wersję
                     if new_host_name and not any("HostName " in l for l in updated_host_block):
                         updated_host_block.append(f"    HostName {new_host_name}\n")
                     if new_user and not any("User " in l for l in updated_host_block):
@@ -172,8 +172,8 @@ def get_user_input(stdscr, prompt, default=""):
         key = stdscr.getch()
 
         if key in [10, 13]:  # ENTER = akceptacja wartości
-            # Jeżeli input_str jest pusty po edycji, zwrócimy None
-            return "".join(input_str).strip() if "".join(input_str).strip() else None
+            # Jeśli input_str jest pusty po edycji, zwróć domyślną wartość
+            return "".join(input_str).strip() if "".join(input_str).strip() else default
         elif key in [curses.KEY_BACKSPACE, 127, 8]:  # BACKSPACE
             if cursor_x > 0:
                 cursor_x -= 1
