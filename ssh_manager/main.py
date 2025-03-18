@@ -170,19 +170,34 @@ def remove_host_ui(stdscr):
         stdscr.getch()
         return
 
-    current_row = 0  # 🟢 Aktualnie wybrany host
+    current_row = 0  # 🟢 Zmienna do śledzenia pozycji
 
     while True:
         stdscr.clear()
         stdscr.addstr("Usuń hosta:\n", curses.A_BOLD)
 
+        # 🟢 Przygotowanie tabeli hostów
+        table_data = []
         for idx, host in enumerate(hosts):
-            if idx == current_row:
-                stdscr.addstr(f"  > {idx + 1}. {host['Host']}\n", curses.A_REVERSE)
-            else:
-                stdscr.addstr(f"    {idx + 1}. {host['Host']}\n")
+            row = [
+                f"> {idx + 1}" if idx == current_row else f"  {idx + 1}",
+                host.get("Host", ""),
+                host.get("HostName", ""),
+                host.get("User", ""),
+                host.get("Port", ""),
+                host.get("IdentityFile", ""),
+            ]
+            table_data.append(row)
 
-        stdscr.addstr("\nStrzałki ↑ ↓ - Wybierz, ENTER - Usuń, Q - Powrót")
+        table_str = tabulate(
+            table_data,
+            headers=["ID", "Host", "HostName", "User", "Port", "IdentityFile"],
+            tablefmt="fancy_grid",
+        )
+
+        stdscr.addstr(table_str + "\n")
+
+        stdscr.addstr("\nStrzałki ↑ ↓ - Wybierz, ENTER - Usuń, ESC - Powrót")
         stdscr.refresh()
 
         key = stdscr.getch()
@@ -193,9 +208,9 @@ def remove_host_ui(stdscr):
         elif key in [10, 13]:  # ENTER = usuń hosta
             remove_entry(config_path, hosts[current_row]["Host"])
             hosts = read_hosts(config_path)  # 🟢 Odśwież listę
-            if current_row >= len(hosts):  # 🟢 Zapobiega wyjściu poza listę
+            if current_row >= len(hosts):  # 🟢 Uniknięcie wyjścia poza listę
                 current_row = max(0, len(hosts) - 1)
-        elif key in [ord("q"), ord("Q")]:  # 🟢 Powrót do menu
+        elif key == 27:  # 🟢 ESC - powrót do menu
             break
 
 
