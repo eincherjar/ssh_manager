@@ -2,7 +2,7 @@ import os
 import platform
 import curses
 from tabulate import tabulate
-from ssh_manager.ssh_operations import get_config_path, read_hosts, add_entry, update_entry, remove_entry, connect_via_ssh, change_config_path, input_with_default
+from ssh_manager.ssh_operations import get_config_path, read_hosts, add_entry, update_entry, remove_entry, connect_via_ssh, change_config_path, get_user_input
 
 config_path = get_config_path()
 
@@ -138,17 +138,16 @@ def edit_host_ui(stdscr):
         stdscr.getch()
         return
 
-    valid_rows = list(range(len(hosts)))  # Tylko rzeczywiste hosty (bez separatorów)
-    selected_idx = 0  # Początkowy wybór
+    valid_rows = list(range(len(hosts)))
+    selected_idx = 0
 
     while True:
         stdscr.clear()
         stdscr.addstr("Edytuj host:\n", curses.A_BOLD)
 
-        # Tworzenie tabeli hostów
         table_data = [
             [
-                idx + 1,  # ID zaczyna się od 1
+                idx + 1,
                 host.get("Host", ""),
                 host.get("HostName", ""),
                 host.get("User", ""),
@@ -161,13 +160,13 @@ def edit_host_ui(stdscr):
         headers = ["ID", "Host", "HostName", "User", "Port", "IdentityFile"]
         table_lines = tabulate(table_data, headers=headers, tablefmt="fancy_grid").split("\n")
 
-        row_counter = -2  # Pomijamy 2 pierwsze wiersze (nagłówki tabeli)
+        row_counter = -2
         for i, line in enumerate(table_lines):
-            if "─" in line or "═" in line:  # Separator, nie zaznaczamy
+            if "─" in line or "═" in line:
                 stdscr.addstr(line + "\n", curses.A_DIM)
             else:
                 row_counter += 1
-                if row_counter == valid_rows[selected_idx]:  # Podświetl zaznaczony host
+                if row_counter == valid_rows[selected_idx]:
                     stdscr.addstr(line + "\n", curses.color_pair(1) | curses.A_BOLD)
                 else:
                     stdscr.addstr(line + "\n")
@@ -180,22 +179,22 @@ def edit_host_ui(stdscr):
             selected_idx -= 1
         elif key == curses.KEY_DOWN and selected_idx < len(valid_rows) - 1:
             selected_idx += 1
-        elif key in [10, 13]:  # ENTER = Edycja hosta
+        elif key in [10, 13]:
             selected_host = hosts[valid_rows[selected_idx]]
             stdscr.clear()
             stdscr.addstr(f"Edytujesz host: {selected_host['Host']}\n\n", curses.A_BOLD)
 
-            new_hostname = input_with_default("Nowy HostName", selected_host.get("HostName", ""))
-            new_user = input_with_default("Nowy User", selected_host.get("User", ""))
-            new_port = input_with_default("Nowy Port", selected_host.get("Port", ""))
-            new_identity_file = input_with_default("Nowa ścieżka do klucza", selected_host.get("IdentityFile", ""))
+            new_hostname = get_user_input(stdscr, "Nowy HostName", selected_host.get("HostName", ""))
+            new_user = get_user_input(stdscr, "Nowy User", selected_host.get("User", ""))
+            new_port = get_user_input(stdscr, "Nowy Port", selected_host.get("Port", ""))
+            new_identity_file = get_user_input(stdscr, "Nowa ścieżka do klucza", selected_host.get("IdentityFile", ""))
 
             update_entry(config_path, selected_host["Host"], new_hostname, new_user, new_port, new_identity_file)
 
-            hosts = read_hosts(config_path)  # Odświeżenie listy po edycji
-            valid_rows = list(range(len(hosts)))  # Aktualizacja indeksów
+            hosts = read_hosts(config_path)
+            valid_rows = list(range(len(hosts)))
             selected_idx = min(selected_idx, len(valid_rows) - 1)
-        elif key == 27:  # ESC - Powrót do menu
+        elif key == 27:
             break
 
 

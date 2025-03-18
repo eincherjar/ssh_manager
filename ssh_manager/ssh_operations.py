@@ -1,6 +1,7 @@
 import os
 import subprocess
 import platform
+import curses
 
 
 def get_config_path():
@@ -107,7 +108,14 @@ def change_config_path():
         return None  # Jeśli plik nie istnieje, zwracamy None
 
 
-def input_with_default(prompt, default_value):
-    """Pobiera input od użytkownika z możliwością pozostawienia wartości domyślnej."""
-    user_input = input(f"{prompt} (ENTER = {default_value}): ").strip()
-    return user_input if user_input else default_value
+def get_user_input(stdscr, prompt, default=""):
+    """Pobiera wejście od użytkownika w trybie curses"""
+    stdscr.addstr(prompt)
+    stdscr.addstr(f" ({default}): ", curses.A_DIM)
+    stdscr.refresh()
+
+    curses.echo()
+    input_str = stdscr.getstr().decode("utf-8").strip()
+    curses.noecho()
+
+    return input_str if input_str else default
