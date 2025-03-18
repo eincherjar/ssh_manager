@@ -59,7 +59,6 @@ def update_entry(file_path, old_host, new_host=None, new_host_name=None, new_use
     lines = []
     inside_target_host = False
     updated_host_block = []  # Tymczasowa lista na wpisy dla danego hosta
-    modified = False  # Sprawdza, czy nastąpiła jakakolwiek zmiana
 
     with open(file_path, "r") as file:
         for line in file:
@@ -75,73 +74,45 @@ def update_entry(file_path, old_host, new_host=None, new_host_name=None, new_use
 
             if inside_target_host:
                 if stripped_line.startswith("HostName "):
-                    if new_host_name:
-                        updated_host_block.append(f"    HostName {new_host_name}\n")
-                        modified = True
+                    updated_host_block.append(f"    HostName {new_host_name}\n" if new_host_name else line)
                 elif stripped_line.startswith("User "):
-                    if new_user is not None:  # Jeśli użytkownik chce usunąć User, nie dodajemy wpisu
-                        if new_user:
-                            updated_host_block.append(f"    User {new_user}\n")
-                        modified = True
+                    updated_host_block.append(f"    User {new_user}\n" if new_user else line)
                 elif stripped_line.startswith("Port "):
-                    if new_port is not None:  # Jeśli użytkownik chce usunąć Port, nie dodajemy wpisu
-                        if new_port:
-                            updated_host_block.append(f"    Port {new_port}\n")
-                        modified = True
+                    updated_host_block.append(f"    Port {new_port}\n" if new_port else line)
                 elif stripped_line.startswith("IdentityFile "):
-                    if new_identity_file is not None:  # Jeśli użytkownik chce usunąć IdentityFile, nie dodajemy wpisu
-                        if new_identity_file:
-                            updated_host_block.append(f"    IdentityFile {new_identity_file}\n")
-                        modified = True
+                    updated_host_block.append(f"    IdentityFile {new_identity_file}\n" if new_identity_file else line)
                 elif stripped_line == "":
-                    # Dodaj nowe wartości, jeśli wcześniej nie istniały
                     if new_host_name and not any("HostName " in l for l in updated_host_block):
                         updated_host_block.append(f"    HostName {new_host_name}\n")
-                        modified = True
                     if new_user and not any("User " in l for l in updated_host_block):
                         updated_host_block.append(f"    User {new_user}\n")
-                        modified = True
                     if new_port and not any("Port " in l for l in updated_host_block):
                         updated_host_block.append(f"    Port {new_port}\n")
-                        modified = True
                     if new_identity_file and not any("IdentityFile " in l for l in updated_host_block):
                         updated_host_block.append(f"    IdentityFile {new_identity_file}\n")
-                        modified = True
-
-                    # Jeśli sekcja hosta zawiera cokolwiek poza `Host`, zapisujemy ją
-                    if len(updated_host_block) > 1:
-                        updated_host_block.append("\n")
-                        lines.extend(updated_host_block)
-
+                    updated_host_block.append("\n")
+                    lines.extend(updated_host_block)
                     inside_target_host = False
                 else:
                     updated_host_block.append(line)
             else:
                 lines.append(line)
 
-    # Jeśli plik kończył się na hostcie, a nie było pustej linii
+    # Jeżeli plik kończył się na hostcie, a nie było pustej linii
     if inside_target_host and updated_host_block:
         if new_host_name and not any("HostName " in l for l in updated_host_block):
             updated_host_block.append(f"    HostName {new_host_name}\n")
-            modified = True
         if new_user and not any("User " in l for l in updated_host_block):
             updated_host_block.append(f"    User {new_user}\n")
-            modified = True
         if new_port and not any("Port " in l for l in updated_host_block):
             updated_host_block.append(f"    Port {new_port}\n")
-            modified = True
         if new_identity_file and not any("IdentityFile " in l for l in updated_host_block):
             updated_host_block.append(f"    IdentityFile {new_identity_file}\n")
-            modified = True
+        updated_host_block.append("\n")
+        lines.extend(updated_host_block)
 
-        if len(updated_host_block) > 1:
-            updated_host_block.append("\n")
-            lines.extend(updated_host_block)
-
-    # Zapisujemy plik tylko jeśli coś się zmieniło
-    if modified:
-        with open(file_path, "w") as file:
-            file.writelines(lines)
+    with open(file_path, "w") as file:
+        file.writelines(lines)
 
 
 def remove_entry(file_path, host_to_remove):
@@ -184,14 +155,26 @@ def change_config_path():
 
 
 def get_user_input(stdscr, prompt, default=""):
-    """Pobiera wejście od użytkownika w trybie curses. Pozwala usunąć wartość."""
-    stdscr.addstr(prompt)
-    stdscr.addstr(f" ({default}): ", curses.A_DIM)
+    """Pozwala edytować istniejącą wartość, usunąć ją lub pozostawić bez zmian"""
+    stdscr.addstr(prompt + ": ")
     stdscr.refresh()
 
-    curses.echo()
-    input_str = stdscr.getstr().decode("utf-8").strip()
-    curses.noecho()
+    input_str = list(default)  # Domyślna wartość w postaci listy znaków
+    cursor_x = len(default)  # Pozycja kursora
 
-    # Jeśli użytkownik nic nie wpisze i wciśnie ENTER, zwracamy None (usunięcie wartości)
-    return input_str if input_str != "" else None
+    while True:
+        stdscr.addstr(1, 0, "".join(input_str) + " ")  # Rysowanie inputu
+        stdscr.move(1, cursor_x)  # Przesunięcie kursora
+        stdscr.refresh()
+
+        key = stdscr.getch()
+
+        if key in [10, 13]:  # ENTER = akceptacja wartości
+            return "".join(input_str).strip() if input_str else None  # None = usuń wpis
+        elif key in [curses.KEY_BACKSPACE, 127]:  # BACKSPACE = usuń znak
+            if cursor_x > 0:
+                cursor_x -= 1
+                input_str.pop(cursor_x)
+        elif 32 <= key <= 126:  # Normalne znaki ASCII
+            input_str.insert(cursor_x, chr(key))
+            cursor_x += 1
