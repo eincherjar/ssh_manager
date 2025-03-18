@@ -75,47 +75,30 @@ def update_entry(file_path, old_host, new_host=None, new_host_name=None, new_use
             if inside_target_host:
                 # Zaktualizuj lub usuń odpowiednie wpisy
                 if stripped_line.startswith("HostName "):
-                    updated_host_block.append(f"    HostName {new_host_name}\n" if new_host_name else "")
+                    if new_host_name:
+                        updated_host_block.append(f"    HostName {new_host_name}\n")
                 elif stripped_line.startswith("User "):
-                    updated_host_block.append(f"    User {new_user}\n" if new_user else "")
+                    if new_user:
+                        updated_host_block.append(f"    User {new_user}\n")
                 elif stripped_line.startswith("Port "):
-                    updated_host_block.append(f"    Port {new_port}\n" if new_port else "")
+                    if new_port:
+                        updated_host_block.append(f"    Port {new_port}\n")
                 elif stripped_line.startswith("IdentityFile "):
-                    # Jeśli użytkownik usunął IdentityFile (czyli wartość jest None), to usuwamy tę linię
+                    # Jeśli użytkownik usunął IdentityFile (czyli new_identity_file jest None), to usuwamy tę linię
                     if new_identity_file:
                         updated_host_block.append(f"    IdentityFile {new_identity_file}\n")
                     # Jeśli new_identity_file jest None, nie dodajemy tej linii
                 elif stripped_line == "":
                     # Zakończenie edycji sekcji danego hosta
-                    if new_host_name and not any("HostName " in l for l in updated_host_block):
-                        updated_host_block.append(f"    HostName {new_host_name}\n")
-                    if new_user and not any("User " in l for l in updated_host_block):
-                        updated_host_block.append(f"    User {new_user}\n")
-                    if new_port and not any("Port " in l for l in updated_host_block):
-                        updated_host_block.append(f"    Port {new_port}\n")
-                    if new_identity_file and not any("IdentityFile " in l for l in updated_host_block):
-                        updated_host_block.append(f"    IdentityFile {new_identity_file}\n")
-                    updated_host_block.append("\n")
                     lines.extend(updated_host_block)
+                    updated_host_block = []
                     inside_target_host = False
                 else:
                     updated_host_block.append(line)
             else:
                 lines.append(line)
 
-    # Jeżeli plik kończył się na hostcie, a nie było pustej linii
-    if inside_target_host and updated_host_block:
-        if new_host_name and not any("HostName " in l for l in updated_host_block):
-            updated_host_block.append(f"    HostName {new_host_name}\n")
-        if new_user and not any("User " in l for l in updated_host_block):
-            updated_host_block.append(f"    User {new_user}\n")
-        if new_port and not any("Port " in l for l in updated_host_block):
-            updated_host_block.append(f"    Port {new_port}\n")
-        if new_identity_file and not any("IdentityFile " in l for l in updated_host_block):
-            updated_host_block.append(f"    IdentityFile {new_identity_file}\n")
-        updated_host_block.append("\n")
-        lines.extend(updated_host_block)
-
+    # Zapisujemy zmiany
     with open(file_path, "w") as file:
         file.writelines(lines)
 
