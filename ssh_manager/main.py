@@ -1,47 +1,132 @@
 import os
 import platform
-import subprocess
 import curses
-from ssh_manager.config_handler import get_config_path
+from ssh_manager.ssh_operations import get_config_path, read_hosts, add_entry, update_entry, remove_entry, connect_via_ssh
+
+config_path = get_config_path()
 
 
-def menu(stdscr):
+def draw_menu(stdscr):
     curses.curs_set(0)
-    stdscr.clear()
-
-    options = ["1. Dodaj nowy host", "2. Edytuj hosta", "3. Usuń hosta", "4. Połącz z hostem", "5. Podaj nową ścieżkę do config", "0. Wyjście"]
-    selected = 0
-    file_path = get_config_path()
+    current_row = 0
 
     while True:
         stdscr.clear()
-        stdscr.addstr(0, 2, "=== Menedżer Konfiguracji SSH ===", curses.A_BOLD)
-        stdscr.addstr(1, 2, f"Aktualny plik: {file_path}", curses.A_DIM)
-        stdscr.addstr(2, 2, "Wybierz opcję:", curses.A_UNDERLINE)
+        stdscr.addstr("  === Menedżer Konfiguracji SSH ===\n", curses.A_BOLD)
+        stdscr.addstr(f"  Aktualny plik: {config_path} \n", curses.A_DIM)
+        stdscr.addstr("  Wybierz opcję:\n\n")
 
-        for idx, option in enumerate(options):
-            if idx == selected:
-                stdscr.addstr(idx + 4, 4, option, curses.A_REVERSE)
+        menu_options = ["Dodaj nowy host", "Edytuj hosta", "Usuń hosta", "Połącz z hostem", "Podaj nową ścieżkę do config", "Wyjście"]
+
+        for idx, option in enumerate(menu_options):
+            if idx == current_row:
+                stdscr.addstr(f"  > {idx + 1}. {option}\n", curses.A_REVERSE)
             else:
-                stdscr.addstr(idx + 4, 4, option)
+                stdscr.addstr(f"    {idx + 1}. {option}\n")
+
+        stdscr.refresh()
 
         key = stdscr.getch()
-
-        if key == curses.KEY_UP and selected > 0:
-            selected -= 1
-        elif key == curses.KEY_DOWN and selected < len(options) - 1:
-            selected += 1
-        elif key in [10, 13]:  # Enter
-            if selected == 0:
+        if key == curses.KEY_UP and current_row > 0:
+            current_row -= 1
+        elif key == curses.KEY_DOWN and current_row < len(menu_options) - 1:
+            current_row += 1
+        elif key in [10, 13]:
+            if current_row == 0:
+                add_host_ui(stdscr)
+            elif current_row == 1:
+                edit_host_ui(stdscr)
+            elif current_row == 2:
+                remove_host_ui(stdscr)
+            elif current_row == 3:
+                connect_host_ui(stdscr)
+            elif current_row == 4:
+                change_config_path(stdscr)
+            elif current_row == 5:
                 break
 
-    stdscr.addstr(len(options) + 6, 2, "Naciśnij dowolny klawisz, aby wyjść...")
+
+def add_host_ui(stdscr):
+    stdscr.clear()
+    stdscr.addstr("Dodawanie nowego hosta:\n")
+    stdscr.addstr("Podaj nazwę hosta: ")
+    stdscr.refresh()
+    curses.echo()
+    host = stdscr.getstr().decode("utf-8")
+
+    stdscr.addstr("Podaj adres hosta (HostName): ")
+    stdscr.refresh()
+    host_name = stdscr.getstr().decode("utf-8")
+
+    add_entry(config_path, host, host_name)
+    stdscr.addstr("\nHost został dodany! Wciśnij dowolny klawisz, aby wrócić.\n")
+    stdscr.refresh()
     stdscr.getch()
 
 
-def run():
-    curses.wrapper(menu)
+def edit_host_ui(stdscr):
+    stdscr.clear()
+    hosts = read_hosts(config_path)
+    if not hosts:
+        stdscr.addstr("Brak hostów w pliku config.\nWciśnij dowolny klawisz.")
+        stdscr.refresh()
+        stdscr.getch()
+        return
+
+    stdscr.addstr("Edytuj hosta:\n")
+    for idx, host in enumerate(hosts):
+        stdscr.addstr(f"  {idx + 1}. {host['Host']}\n")
+
+    stdscr.addstr("\nWybierz numer hosta: ")
+    stdscr.refresh()
+    curses.echo()
+    try:
+        choice = int(stdscr.getstr().decode("utf-8")) - 1
+        if 0 <= choice < len(hosts):
+            selected_host = hosts[choice]
+            stdscr.addstr(f"\nNowy adres dla {selected_host['Host']}: ")
+            stdscr.refresh()
+            new_hostname = stdscr.getstr().decode("utf-8")
+            update_entry(config_path, selected_host["Host"], new_hostname)
+            stdscr.addstr("\nHost został zaktualizowany! Wciśnij dowolny klawisz.")
+        else:
+            stdscr.addstr("\nNieprawidłowy wybór!")
+    except ValueError:
+        stdscr.addstr("\nBłąd: musisz podać numer.")
+
+    stdscr.refresh()
+    stdscr.getch()
+
+
+def remove_host_ui(stdscr):
+    stdscr.clear()
+    hosts = read_hosts(config_path)
+    if not hosts:
+        stdscr.addstr("Brak hostów w pliku config.\nWciśnij dowolny klawisz.")
+        stdscr.refresh()
+        stdscr.getch()
+        return
+
+    stdscr.addstr("Usuń hosta:\n")
+    for idx, host in enumerate(hosts):
+        stdscr.addstr(f"  {idx + 1}. {host['Host']}\n")
+
+    stdscr.addstr("\nWybierz numer hosta do usunięcia: ")
+    stdscr.refresh()
+    curses.echo()
+    try:
+        choice = int(stdscr.getstr().decode("utf-8")) - 1
+        if 0 <= choice < len(hosts):
+            remove_entry(config_path, hosts[choice]["Host"])
+            stdscr.addstr("\nHost został usunięty! Wciśnij dowolny klawisz.")
+        else:
+            stdscr.addstr("\nNieprawidłowy wybór!")
+    except ValueError:
+        stdscr.addstr("\nBłąd: musisz podać numer.")
+
+    stdscr.refresh()
+    stdscr.getch()
 
 
 if __name__ == "__main__":
-    run()
+    curses.wrapper(draw_menu)
