@@ -58,6 +58,7 @@ def add_entry(file_path, host, host_name, user=None, port=None, identity_file=No
 def update_entry(file_path, old_host, new_host=None, new_host_name=None, new_user=None, new_port=None, new_identity_file=None):
     lines = []
     inside_target_host = False
+    found_hostname, found_user, found_port, found_identity = False, False, False, False
 
     with open(file_path, "r") as file:
         for line in file:
@@ -67,15 +68,28 @@ def update_entry(file_path, old_host, new_host=None, new_host_name=None, new_use
                 inside_target_host = True
                 new_host_value = new_host if new_host else old_host
                 lines.append(f"Host {new_host_value}\n")  # Aktualizacja Host
-            elif inside_target_host and new_host_name and stripped_line.startswith("HostName "):
-                lines.append(f"    HostName {new_host_name}\n")
-            elif inside_target_host and new_user and stripped_line.startswith("User "):
-                lines.append(f"    User {new_user}\n")
-            elif inside_target_host and new_port and stripped_line.startswith("Port "):
-                lines.append(f"    Port {new_port}\n")
-            elif inside_target_host and new_identity_file and stripped_line.startswith("IdentityFile "):
-                lines.append(f"    IdentityFile {new_identity_file}\n")
+            elif inside_target_host and stripped_line.startswith("HostName "):
+                found_hostname = True
+                lines.append(f"    HostName {new_host_name}\n" if new_host_name else line)
+            elif inside_target_host and stripped_line.startswith("User "):
+                found_user = True
+                lines.append(f"    User {new_user}\n" if new_user else line)
+            elif inside_target_host and stripped_line.startswith("Port "):
+                found_port = True
+                lines.append(f"    Port {new_port}\n" if new_port else line)
+            elif inside_target_host and stripped_line.startswith("IdentityFile "):
+                found_identity = True
+                lines.append(f"    IdentityFile {new_identity_file}\n" if new_identity_file else line)
             elif stripped_line == "":
+                if inside_target_host:
+                    if not found_hostname and new_host_name:
+                        lines.append(f"    HostName {new_host_name}\n")
+                    if not found_user and new_user:
+                        lines.append(f"    User {new_user}\n")
+                    if not found_port and new_port:
+                        lines.append(f"    Port {new_port}\n")
+                    if not found_identity and new_identity_file:
+                        lines.append(f"    IdentityFile {new_identity_file}\n")
                 inside_target_host = False
                 lines.append(line)
             else:
