@@ -1,1 +1,3 @@
+curses
+tabulate
 windows-curses; platform_system=='Windows'

@@ -1,6 +1,7 @@
 import os
 import platform
 import curses
+from tabulate import tabulate
 from ssh_manager.ssh_operations import get_config_path, read_hosts, add_entry, update_entry, remove_entry, connect_via_ssh, change_config_path
 
 config_path = get_config_path()
@@ -170,15 +171,33 @@ def remove_host_ui(stdscr):
         stdscr.getch()
         return
 
-    current_row = 0  # Indeks zaznaczonego hosta
+    current_row = 0
 
     while True:
         stdscr.clear()
         stdscr.addstr("Usuń hosta (ESC = Powrót):\n", curses.A_BOLD)
 
+        # Tworzymy dane do tabeli
+        table_data = []
         for idx, host in enumerate(hosts):
-            prefix = "> " if idx == current_row else "  "
-            stdscr.addstr(f"{prefix}{idx + 1}. {host['Host']}\n", curses.A_REVERSE if idx == current_row else curses.A_NORMAL)
+            table_data.append(
+                [
+                    idx + 1,
+                    host.get("Host", "-"),
+                    host.get("HostName", "-"),
+                    host.get("User", "-"),
+                    host.get("Port", "-"),
+                    host.get("IdentityFile", "-"),
+                ]
+            )
+
+        # Tworzymy tabelę
+        table_str = tabulate(table_data, headers=["ID", "Host", "HostName", "User", "Port", "IdentityFile"], tablefmt="grid")
+
+        # Wyświetlamy tabelę
+        stdscr.addstr(table_str + "\n")
+
+        stdscr.addstr("\nPoruszaj się strzałkami ↑↓, Enter = Usuń, ESC = Powrót\n", curses.A_DIM)
 
         stdscr.refresh()
 
@@ -188,12 +207,11 @@ def remove_host_ui(stdscr):
             current_row -= 1
         elif key == curses.KEY_DOWN and current_row < len(hosts) - 1:
             current_row += 1
-        elif key in [10, 13]:  # Enter - usuwa wybrany host
+        elif key in [10, 13]:  # Enter - usuwa wybranego hosta
             remove_entry(config_path, hosts[current_row]["Host"])
             return  # Po usunięciu wraca do menu
         elif key == 27:  # ESC - Powrót do menu
             return
-    stdscr.getch()
 
 
 def connect_host_ui(stdscr):
