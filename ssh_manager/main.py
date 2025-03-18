@@ -177,7 +177,7 @@ def remove_host_ui(stdscr):
 
     while True:
         stdscr.clear()
-        stdscr.addstr("Usuń hosta:\n", curses.A_BOLD)
+        stdscr.addstr("Usuń host:\n", curses.A_BOLD)
 
         # Tworzymy listę danych hostów
         table_data = [
