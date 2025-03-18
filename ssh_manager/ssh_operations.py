@@ -159,11 +159,11 @@ def get_user_input(stdscr, prompt, default=""):
     stdscr.addstr(prompt + ": ")
     stdscr.refresh()
 
-    input_str = list(default)  # Domyślna wartość w postaci listy znaków
-    cursor_x = len(default)  # Pozycja kursora
+    input_str = list(default)  # Domyślny tekst jako lista znaków (można modyfikować)
+    cursor_x = len(input_str)  # Pozycja kursora
 
     while True:
-        stdscr.addstr(1, 0, "".join(input_str) + " ")  # Rysowanie inputu
+        stdscr.addstr(1, 0, "".join(input_str) + " ")  # Rysowanie inputu + dodatkowa spacja do kasowania resztek
         stdscr.move(1, cursor_x)  # Przesunięcie kursora
         stdscr.refresh()
 
@@ -171,10 +171,10 @@ def get_user_input(stdscr, prompt, default=""):
 
         if key in [10, 13]:  # ENTER = akceptacja wartości
             return "".join(input_str).strip() if input_str else None  # None = usuń wpis
-        elif key in [curses.KEY_BACKSPACE, 127]:  # BACKSPACE = usuń znak
+        elif key in [curses.KEY_BACKSPACE, 127, 8]:  # Obsługa BACKSPACE
             if cursor_x > 0:
                 cursor_x -= 1
                 input_str.pop(cursor_x)
-        elif 32 <= key <= 126:  # Normalne znaki ASCII
+        elif 32 <= key <= 126:  # Normalne znaki ASCII (spacje, litery, cyfry, itp.)
             input_str.insert(cursor_x, chr(key))
             cursor_x += 1
