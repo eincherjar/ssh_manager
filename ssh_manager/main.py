@@ -56,13 +56,15 @@ def draw_menu(stdscr):
                 stdscr.addstr(f"  {row}\n")
 
         stdscr.addstr("\n  Wybierz opcję:\n\n")
-        menu_options = ["Dodaj nowy host", "Edytuj hosta", "Usuń hosta", "Połącz z hostem", "Podaj nową ścieżkę do config", "Wyjście"]
+
+        # Opcje menu (bez numeracji)
+        menu_options = ["  Dodaj nowy host   ", "  Edytuj hosta      ", "  Usuń hosta        ", "  Połącz z hostem   ", "  Podaj nową ścieżkę do config  ", "  Wyjście           "]
 
         for idx, option in enumerate(menu_options):
             if idx == current_row:
-                stdscr.addstr(f"  > {idx + 1}. {option}\n", curses.A_REVERSE)
+                stdscr.addstr(f"  > {option} <  \n", curses.A_REVERSE)
             else:
-                stdscr.addstr(f"    {idx + 1}. {option}\n")
+                stdscr.addstr(f"    {option}    \n")
 
         stdscr.refresh()
 
