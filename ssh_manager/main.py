@@ -96,33 +96,35 @@ def add_host_ui(stdscr):
 
     curses.echo()  # Włącz echo do wprowadzania tekstu
 
+    def get_input(prompt):
+        stdscr.addstr(prompt)
+        key = stdscr.getch()
+        if key == 27:  # ESC
+            return None  # Zwracamy None, aby oznaczyć anulowanie
+        stdscr.ungetch(key)  # Wrzucamy klawisz z powrotem do kolejki
+        return stdscr.getstr().decode("utf-8").strip()  # Pobieramy cały string
+
     # Pobieranie wartości
-    stdscr.addstr("Podaj nazwę hosta: ")
-    host = stdscr.getstr().decode("utf-8").strip()
-    if host.lower() == "esc":
+    host = get_input("Podaj nazwę hosta: ")
+    if host is None:
         return
 
-    stdscr.addstr("Podaj adres hosta (HostName): ")
-    host_name = stdscr.getstr().decode("utf-8").strip()
-    if host_name.lower() == "esc":
+    host_name = get_input("Podaj adres hosta (HostName): ")
+    if host_name is None:
         return
 
-    stdscr.addstr("Podaj użytkownika (Enter = pomiń): ")
-    user = stdscr.getstr().decode("utf-8").strip() or None
-    if user and user.lower() == "esc":
+    user = get_input("Podaj użytkownika (Enter = pomiń): ") or None
+    if user is None:
         return
 
-    stdscr.addstr("Podaj port (Enter = pomiń): ")
-    port = stdscr.getstr().decode("utf-8").strip()
+    port = get_input("Podaj port (Enter = pomiń): ")
+    if port is None:
+        return
     port = port if port.isdigit() else None
-    if port and port.lower() == "esc":
-        return
 
-    stdscr.addstr("Podaj ścieżkę do klucza (Enter = pomiń, domyślny: ~/.ssh/id_rsa.pub): ")
-    identity_file = stdscr.getstr().decode("utf-8").strip()
-    if identity_file.lower() == "esc":
+    identity_file = get_input("Podaj ścieżkę do klucza (Enter = pomiń, domyślny: ~/.ssh/id_rsa.pub): ") or None
+    if identity_file is None:
         return
-    identity_file = identity_file or None  # Jeśli puste, nie dodajemy tego pola
 
     # Dodanie wpisu i powrót do menu
     add_entry(config_path, host, host_name, user, port, identity_file)
