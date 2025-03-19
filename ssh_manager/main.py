@@ -119,6 +119,7 @@ def add_host_ui(stdscr):
 
 
 def edit_host_ui(stdscr):
+    # dodac anulowanie czyli esc
     curses.curs_set(1)
     curses.start_color()
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
