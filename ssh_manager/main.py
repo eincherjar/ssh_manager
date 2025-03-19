@@ -298,8 +298,8 @@ def connect_host_ui(stdscr):
             stdscr.addstr(f"\nŁączenie z {hosts[selected_idx]['Host']}...\n")
             stdscr.refresh()
             curses.endwin()  # Wyjście z trybu curses przed uruchomieniem SSH
+            clear_terminal()
             connect_via_ssh(hosts[selected_idx])
-            # Po zakończeniu sesji SSH czyścimy terminal
             clear_terminal()
             return  # Powrót do głównej pętli `wrapper()`
         elif key == 27:  # Esc - Wyjście do głównego menu
