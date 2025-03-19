@@ -150,22 +150,23 @@ def connect_via_ssh(host):
         print(f"Łączenie z {host['Host']} ({host['HostName']})...")
 
         # Przygotowanie komendy SSH
-        ssh_command = ["ssh", f"{host['User']}@{host['HostName']}"]
+        # ssh_command = ["ssh", f"{host['User']}@{host['HostName']}"]
+        ssh_command = f"ssh {host['Host']}"
 
-        # Dodajemy opcjonalnie port, jeśli jest dostępny
-        if "Port" in host:
-            ssh_command.extend(["-p", str(host["Port"])])
+        # # Dodajemy opcjonalnie port, jeśli jest dostępny
+        # if "Port" in host:
+        #     ssh_command.extend(["-p", str(host["Port"])])
 
-        # Dodajemy opcję klucza prywatnego, jeśli jest dostępna
-        if "IdentityFile" in host:
-            identity_file = os.path.expanduser(host["IdentityFile"])
-            if os.path.exists(identity_file):
-                ssh_command.extend(["-i", identity_file])
-            else:
-                print(f"Nie znaleziono pliku klucza: {identity_file}")
-                return
+        # # Dodajemy opcję klucza prywatnego, jeśli jest dostępna
+        # if "IdentityFile" in host:
+        #     identity_file = os.path.expanduser(host["IdentityFile"])
+        #     if os.path.exists(identity_file):
+        #         ssh_command.extend(["-i", identity_file])
+        #     else:
+        #         print(f"Nie znaleziono pliku klucza: {identity_file}")
+        #         return
 
-        # Uruchomienie komendy SSH w trybie interaktywnym
+        # Uruchomienie SSH jako nowy proces
         subprocess.run(ssh_command, check=True)
 
     except subprocess.CalledProcessError as e:
