@@ -198,3 +198,8 @@ def get_user_input(stdscr, prompt, default=""):
         elif 32 <= key <= 126:  # Normalne znaki ASCII
             input_str.insert(cursor_x, chr(key))
             cursor_x += 1
+
+
+def clear_terminal():
+    """Czyści ekran terminala po rozłączeniu z SSH."""
+    os.system("cls" if os.name == "nt" else "clear")

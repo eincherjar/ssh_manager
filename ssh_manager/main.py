@@ -2,7 +2,7 @@ import os
 import platform
 import curses
 from tabulate import tabulate
-from ssh_manager.ssh_operations import get_config_path, read_hosts, add_entry, update_entry, remove_entry, connect_via_ssh, change_config_path, get_user_input
+from ssh_manager.ssh_operations import get_config_path, read_hosts, add_entry, update_entry, remove_entry, connect_via_ssh, change_config_path, get_user_input, clear_terminal
 
 config_path = get_config_path()
 
@@ -299,6 +299,8 @@ def connect_host_ui(stdscr):
             stdscr.refresh()
             curses.endwin()  # Wyjście z trybu curses przed uruchomieniem SSH
             connect_via_ssh(hosts[selected_idx])
+            # Po zakończeniu sesji SSH czyścimy terminal
+            clear_terminal()
             return  # Powrót do głównej pętli `wrapper()`
         elif key == 27:  # Esc - Wyjście do głównego menu
             return
