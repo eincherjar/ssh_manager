@@ -99,19 +99,19 @@ def add_host_ui(stdscr):
     if host is None:
         return
 
-    host_name = get_input(stdscr, "\nPodaj adres hosta (HostName): ")
+    host_name = get_input(stdscr, "Podaj adres hosta (HostName): ")
     if host_name is None:
         return
 
-    user = get_input(stdscr, "\nPodaj użytkownika (Enter = pomiń): ")
+    user = get_input(stdscr, "Podaj użytkownika (Enter = pomiń): ")
     if user is None:
         user = ""
 
-    port = get_input(stdscr, "\nPodaj port (Enter = pomiń): ")
+    port = get_input(stdscr, "Podaj port (Enter = pomiń): ")
     if port and not port.isdigit():
         port = None  # Walidacja portu
 
-    identity_file = get_input(stdscr, "\nPodaj ścieżkę do klucza (Enter = pomiń, domyślny: ~/.ssh/id_rsa.pub): ")
+    identity_file = get_input(stdscr, "Podaj ścieżkę do klucza (Enter = pomiń, domyślny: ~/.ssh/id_rsa.pub): ")
     if identity_file is None:
         identity_file = ""
 
