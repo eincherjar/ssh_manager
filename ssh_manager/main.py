@@ -285,6 +285,9 @@ def connect_host_ui(stdscr):
         choice = int(stdscr.getstr().decode("utf-8")) - 1
         if 0 <= choice < len(hosts):
             selected_host = hosts[choice]
+            stdscr.addstr(f"\n{selected_host}\n")
+            # stdscr.refresh()
+
             # Łączymy się przez SSH za pomocą danych z wybranego hosta
             connect_via_ssh(selected_host)
         else:
