@@ -92,7 +92,7 @@ def draw_menu(stdscr):
 
 def add_host_ui(stdscr):
     stdscr.clear()
-    stdscr.addstr("Dodawanie nowego hosta (ESC, aby wrócić):\n", curses.A_BOLD)
+    stdscr.addstr("\nDodawanie nowego hosta: ENTER - Zatwierdź, ESC - Powrót")
 
     curses.echo()  # Włącz echo do wprowadzania tekstu
 
