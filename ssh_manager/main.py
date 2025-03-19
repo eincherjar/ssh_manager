@@ -20,7 +20,7 @@ def draw_menu(stdscr):
         hosts = read_hosts(config_path)
 
         if hosts:
-            stdscr.addstr("\n", curses.A_UNDERLINE)
+            stdscr.addstr("\n  >>> Lista hostów <<<\n", curses.A_UNDERLINE)
 
             # Nagłówki tabeli
             columns = ["ID", "Host", "HostName", "User", "Port", "IdentityFile"]
@@ -96,34 +96,33 @@ def add_host_ui(stdscr):
 
     curses.echo()  # Włącz echo do wprowadzania tekstu
 
-    def get_input(prompt):
-        stdscr.addstr(prompt)
-        key = stdscr.getch()
-        if key == 27:  # ESC
-            return None  # Zwracamy None, aby oznaczyć anulowanie
-        return stdscr.getstr().decode("utf-8").strip()  # Pobieramy cały string
-
     # Pobieranie wartości
-    host = get_input("Podaj nazwę hosta: ")
-    if host is None:
+    stdscr.addstr("Podaj nazwę hosta: ")
+    host = stdscr.getstr().decode("utf-8").strip()
+    if host.lower() == "esc":
         return
 
-    host_name = get_input("Podaj adres hosta (HostName): ")
-    if host_name is None:
+    stdscr.addstr("Podaj adres hosta (HostName): ")
+    host_name = stdscr.getstr().decode("utf-8").strip()
+    if host_name.lower() == "esc":
         return
 
-    user = get_input("Podaj użytkownika (Enter = pomiń): ") or None
-    if user is None:
+    stdscr.addstr("Podaj użytkownika (Enter = pomiń): ")
+    user = stdscr.getstr().decode("utf-8").strip() or None
+    if user and user.lower() == "esc":
         return
 
-    port = get_input("Podaj port (Enter = pomiń): ")
-    if port is None:
-        return
+    stdscr.addstr("Podaj port (Enter = pomiń): ")
+    port = stdscr.getstr().decode("utf-8").strip()
     port = port if port.isdigit() else None
-
-    identity_file = get_input("Podaj ścieżkę do klucza (Enter = pomiń, domyślny: ~/.ssh/id_rsa.pub): ") or None
-    if identity_file is None:
+    if port and port.lower() == "esc":
         return
+
+    stdscr.addstr("Podaj ścieżkę do klucza (Enter = pomiń, domyślny: ~/.ssh/id_rsa.pub): ")
+    identity_file = stdscr.getstr().decode("utf-8").strip()
+    if identity_file.lower() == "esc":
+        return
+    identity_file = identity_file or None  # Jeśli puste, nie dodajemy tego pola
 
     # Dodanie wpisu i powrót do menu
     add_entry(config_path, host, host_name, user, port, identity_file)
