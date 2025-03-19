@@ -195,10 +195,10 @@ def clear_terminal():
 
 
 def get_input(stdscr, prompt):
-    stdscr.addstr(prompt)
+    stdscr.addstr(prompt + "\n")  # Dodanie nowej linii
     stdscr.refresh()
 
-    curses.noecho()  # Wyłącz echo, żeby uniknąć podwójnego wyświetlania
+    curses.noecho()  # Wyłącz echo, żeby uniknąć dublowania znaków
 
     user_input = ""
     while True:
