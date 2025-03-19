@@ -1,6 +1,7 @@
 import os
 import platform
 import curses
+import subprocess
 from tabulate import tabulate
 from ssh_manager.ssh_operations import get_config_path, read_hosts, add_entry, update_entry, remove_entry, connect_via_ssh, change_config_path, get_user_input
 
@@ -285,11 +286,14 @@ def connect_host_ui(stdscr):
         choice = int(stdscr.getstr().decode("utf-8")) - 1
         if 0 <= choice < len(hosts):
             selected_host = hosts[choice]
-            stdscr.addstr(f"\n{selected_host}\n")
+            # stdscr.addstr(f"\n{selected_host}\n")
+
+            ssh_command = f"ssh {selected_host['Host']}"
+            subprocess.run(ssh_command, check=True)
             # stdscr.refresh()
 
             # Łączymy się przez SSH za pomocą danych z wybranego hosta
-            connect_via_ssh(selected_host)
+            # connect_via_ssh(selected_host)
         else:
             stdscr.addstr("\nNieprawidłowy wybór!\n")
     except ValueError:
