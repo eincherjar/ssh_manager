@@ -91,9 +91,9 @@ def draw_menu(stdscr):
 
 
 def add_host_ui(stdscr):
+    curses.curs_set(1)  # Ustawienie widoczności kursora
     stdscr.clear()
     stdscr.addstr("Dodawanie nowego hosta (ESC, aby wrócić):\n", curses.A_BOLD)
-    curses.curs_set(1)  # Ustawienie widoczności kursora
 
     host = get_input(stdscr, "Podaj nazwę hosta: ")
     if host is None:
@@ -119,7 +119,7 @@ def add_host_ui(stdscr):
 
 
 def edit_host_ui(stdscr):
-    curses.curs_set(0)
+    curses.curs_set(1)
     curses.start_color()
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
@@ -299,6 +299,7 @@ def connect_host_ui(stdscr):
 
 
 def change_config_path_ui(stdscr):
+    curses.curs_set(1)  # Ustawienie widoczności kursora
     """Pozwala użytkownikowi zmienić ścieżkę do pliku konfiguracyjnego SSH w trybie curses."""
     curses.echo()  # Włączenie trybu echo, by widzieć wpisywany tekst
     stdscr.clear()
