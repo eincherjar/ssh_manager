@@ -311,24 +311,25 @@ def change_config_path_ui(stdscr):
     curses.echo()  # Włączenie trybu echo, by widzieć wpisywany tekst
     stdscr.clear()
     stdscr.addstr("Podaj nową ścieżkę do pliku SSH config (Enter, aby zatwierdzić, ESC aby anulować):\n", curses.A_BOLD)
-    stdscr.addstr("> ")
 
     new_path = ""
+
     while True:
+        stdscr.clear()
+        stdscr.addstr("Podaj nową ścieżkę do pliku SSH config (Enter, aby zatwierdzić, ESC aby anulować):\n", curses.A_BOLD)
+        stdscr.addstr(f"> {new_path}")  # Wyświetlamy aktualny stan wpisywanego tekstu
+        stdscr.refresh()
+
         key = stdscr.getch()
 
-        if key == 27:  # ESC -> wyjście do menu
+        if key == 27:  # ESC -> powrót do menu
             return None
         elif key in [10, 13]:  # Enter -> zakończ edycję
             break
-        elif key == 127:  # Backspace
-            new_path = new_path[:-1]
-            stdscr.clear()
-            stdscr.addstr("Podaj nową ścieżkę do pliku SSH config (Enter, aby zatwierdzić, ESC aby anulować):\n", curses.A_BOLD)
-            stdscr.addstr(f"> {new_path}")
-        else:
+        elif key in [127, 8]:  # Backspace (obsługuje różne systemy)
+            new_path = new_path[:-1]  # Usuwamy ostatni znak
+        elif 32 <= key <= 126:  # Obsługuje tylko czytelne znaki (spacja - ~)
             new_path += chr(key)
-            stdscr.addstr(chr(key))
 
     new_path = new_path.strip()
 
