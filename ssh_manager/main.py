@@ -81,7 +81,7 @@ def draw_menu(stdscr):
             elif current_row == 3:
                 connect_host_ui(stdscr)
             elif current_row == 4:
-                new_path = change_config_path()
+                new_path = change_config_path_ui(stdscr)
                 if new_path:
                     config_path = new_path
             elif current_row == 5:
@@ -304,6 +304,41 @@ def connect_host_ui(stdscr):
             return  # Powrót do głównej pętli `wrapper()`
         elif key == 27:  # Esc - Wyjście do głównego menu
             return
+
+
+def change_config_path_ui(stdscr):
+    """Pozwala użytkownikowi zmienić ścieżkę do pliku konfiguracyjnego SSH w trybie curses."""
+    curses.echo()  # Włączenie trybu echo, by widzieć wpisywany tekst
+    stdscr.clear()
+    stdscr.addstr("Podaj nową ścieżkę do pliku SSH config (Enter, aby zatwierdzić, ESC aby anulować):\n", curses.A_BOLD)
+    stdscr.addstr("> ")
+
+    new_path = ""
+    while True:
+        key = stdscr.getch()
+
+        if key == 27:  # ESC -> wyjście do menu
+            return None
+        elif key in [10, 13]:  # Enter -> zakończ edycję
+            break
+        elif key == 127:  # Backspace
+            new_path = new_path[:-1]
+            stdscr.clear()
+            stdscr.addstr("Podaj nową ścieżkę do pliku SSH config (Enter, aby zatwierdzić, ESC aby anulować):\n", curses.A_BOLD)
+            stdscr.addstr(f"> {new_path}")
+        else:
+            new_path += chr(key)
+            stdscr.addstr(chr(key))
+
+    new_path = new_path.strip()
+
+    if os.path.isfile(new_path):
+        return new_path  # Nowa ścieżka jest poprawna
+    else:
+        stdscr.addstr("\nBłąd: Plik nie istnieje. Naciśnij dowolny klawisz, aby wrócić.", curses.A_BOLD)
+        stdscr.refresh()
+        stdscr.getch()
+        return None  # Jeśli plik nie istnieje, wracamy do menu
 
 
 if __name__ == "__main__":

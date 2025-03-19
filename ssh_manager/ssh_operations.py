@@ -158,15 +158,15 @@ def connect_via_ssh(host):
         print(f"Błąd: {e}")
 
 
-def change_config_path():
-    """Pozwala użytkownikowi zmienić ścieżkę do pliku konfiguracyjnego SSH."""
-    new_path = input("Podaj nową ścieżkę do pliku SSH config: ").strip()
+# def change_config_path():
+#     """Pozwala użytkownikowi zmienić ścieżkę do pliku konfiguracyjnego SSH."""
+#     new_path = input("Podaj nową ścieżkę do pliku SSH config: ").strip()
 
-    if os.path.isfile(new_path):
-        return new_path  # Zwracamy nową ścieżkę
-    else:
-        print("Błąd: Plik nie istnieje. Spróbuj ponownie.")
-        return None  # Jeśli plik nie istnieje, zwracamy None
+#     if os.path.isfile(new_path):
+#         return new_path  # Zwracamy nową ścieżkę
+#     else:
+#         print("Błąd: Plik nie istnieje. Spróbuj ponownie.")
+#         return None  # Jeśli plik nie istnieje, zwracamy None
 
 
 def get_user_input(stdscr, prompt, default=""):
