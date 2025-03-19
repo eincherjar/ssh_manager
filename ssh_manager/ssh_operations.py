@@ -198,28 +198,10 @@ def get_input(stdscr, prompt):
     stdscr.addstr(prompt)
     stdscr.refresh()
 
-    user_input = ""
+    curses.echo()  # Włącz echo – system sam wyświetli znaki
+    user_input = stdscr.getstr().decode("utf-8").strip()  # Pobierz cały wiersz
 
-    while True:
-        key = stdscr.getch()
+    if user_input == "":
+        return None
 
-        if key == 27:  # ESC - anulowanie
-            return None
-
-        elif key in [10, 13]:  # Enter - zakończenie wpisywania
-            break
-
-        elif key in [curses.KEY_BACKSPACE, 127, 8]:  # Obsługa Backspace
-            if user_input:
-                user_input = user_input[:-1]
-                y, x = stdscr.getyx()
-                stdscr.move(y, x - 1)
-                stdscr.delch()
-
-        elif 32 <= key <= 126:  # Obsługa tylko znaków drukowalnych
-            user_input += chr(key)
-            stdscr.addch(key)
-
-        stdscr.refresh()  # Odśwież ekran po każdej zmianie
-
-    return user_input.strip()
+    return user_input
