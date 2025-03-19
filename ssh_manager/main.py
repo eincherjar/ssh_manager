@@ -20,8 +20,6 @@ def draw_menu(stdscr):
         hosts = read_hosts(config_path)
 
         if hosts:
-            stdscr.addstr("\n  >>> Lista hostów <<<\n", curses.A_UNDERLINE)
-
             # Nagłówki tabeli
             columns = ["ID", "Host", "HostName", "User", "Port", "IdentityFile"]
             padding = 2  # Padding 2 spacje
