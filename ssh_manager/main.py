@@ -99,8 +99,6 @@ def add_host_ui(stdscr):
         return
 
     host_name = get_input(stdscr, "\nPodaj adres hosta (HostName): ")
-    if host_name is None:
-        return
 
     user = get_input(stdscr, "\nPodaj użytkownika (Enter = pomiń): ")
 
