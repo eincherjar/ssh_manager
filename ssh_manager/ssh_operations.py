@@ -192,3 +192,26 @@ def get_user_input(stdscr, prompt, default=""):
 def clear_terminal():
     """Czyści ekran terminala po rozłączeniu z SSH."""
     os.system("cls" if os.name == "nt" else "clear")
+
+
+def get_input(stdscr, prompt):
+    stdscr.addstr(prompt)
+    stdscr.refresh()
+
+    curses.echo()  # Włącz echo do wprowadzania tekstu
+
+    user_input = ""
+    while True:
+        key = stdscr.getch()
+
+        if key == 27:  # ESC - anulowanie
+            return None
+
+        elif key == 10:  # Enter - zakończenie wpisywania
+            break
+
+        else:
+            user_input += chr(key)
+            stdscr.addstr(chr(key))  # Wyświetlanie wpisanego znaku
+
+    return user_input.strip()
