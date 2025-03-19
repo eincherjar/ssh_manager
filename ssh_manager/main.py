@@ -94,7 +94,6 @@ def add_host_ui(stdscr):
     stdscr.clear()
     stdscr.addstr("Dodawanie nowego hosta (ESC, aby wrócić):\n", curses.A_BOLD)
 
-    # Pobieranie wartości
     host = get_input(stdscr, "Podaj nazwę hosta: ")
     if host is None:
         return
@@ -110,7 +109,6 @@ def add_host_ui(stdscr):
 
     identity_file = get_input(stdscr, "Podaj ścieżkę do klucza (Enter = pomiń, domyślny: ~/.ssh/id_rsa.pub): ")
 
-    # Dodanie wpisu i powrót do menu
     add_entry(config_path, host, host_name, user, port, identity_file)
 
 
