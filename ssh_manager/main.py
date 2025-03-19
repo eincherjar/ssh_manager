@@ -101,7 +101,6 @@ def add_host_ui(stdscr):
         key = stdscr.getch()
         if key == 27:  # ESC
             return None  # Zwracamy None, aby oznaczyć anulowanie
-        stdscr.ungetch(key)  # Wrzucamy klawisz z powrotem do kolejki
         return stdscr.getstr().decode("utf-8").strip()  # Pobieramy cały string
 
     # Pobieranie wartości
