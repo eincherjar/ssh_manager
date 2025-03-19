@@ -288,8 +288,12 @@ def connect_host_ui(stdscr):
             stdscr.addstr(f"\nŁączenie z {selected_host['Host']}...\n")
             stdscr.refresh()
 
+            # Kończymy tryb curses, aby zwolnić terminal
+            curses.endwin()
+
             # Łączymy się przez SSH za pomocą danych z wybranego hosta
             connect_via_ssh(selected_host)
+
         else:
             stdscr.addstr("\nNieprawidłowy wybór!\n")
     except ValueError:
