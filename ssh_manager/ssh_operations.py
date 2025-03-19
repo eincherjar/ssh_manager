@@ -198,9 +198,9 @@ def get_input(stdscr, prompt):
     stdscr.addstr(prompt)
     stdscr.refresh()
 
-    curses.noecho()  # Wyłącz echo, żeby uniknąć podwójnego wyświetlania
-
+    curses.echo()  # Włącz echo, żeby znaki były widoczne
     user_input = ""
+
     while True:
         key = stdscr.getch()
 
@@ -212,13 +212,13 @@ def get_input(stdscr, prompt):
 
         elif key in [curses.KEY_BACKSPACE, 127, 8]:  # Obsługa Backspace
             if user_input:
-                user_input = user_input[:-1]  # Usuń ostatni znak
-                y, x = stdscr.getyx()  # Pobierz aktualną pozycję kursora
-                stdscr.move(y, x - 1)  # Przesuń kursor w lewo
-                stdscr.delch()  # Usuń znak na pozycji kursora
+                user_input = user_input[:-1]
+                stdscr.delch()
 
         elif 32 <= key <= 126:  # Obsługa tylko znaków drukowalnych
             user_input += chr(key)
             stdscr.addch(key)
+
+        stdscr.refresh()  # Odświeżanie ekranu po każdym wpisaniu znaku
 
     return user_input.strip()

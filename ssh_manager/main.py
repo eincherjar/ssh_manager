@@ -93,19 +93,27 @@ def draw_menu(stdscr):
 def add_host_ui(stdscr):
     stdscr.clear()
     stdscr.addstr("Dodawanie nowego hosta (ESC, aby wrócić):\n", curses.A_BOLD)
+    curses.curs_set(1)  # Ustawienie widoczności kursora
 
     host = get_input(stdscr, "Podaj nazwę hosta: ")
     if host is None:
         return
 
     host_name = get_input(stdscr, "\nPodaj adres hosta (HostName): ")
+    if host_name is None:
+        return
 
     user = get_input(stdscr, "\nPodaj użytkownika (Enter = pomiń): ")
+    if user is None:
+        user = ""
 
     port = get_input(stdscr, "\nPodaj port (Enter = pomiń): ")
-    port = port if port and port.isdigit() else None  # Walidacja portu
+    if port and not port.isdigit():
+        port = None  # Walidacja portu
 
     identity_file = get_input(stdscr, "\nPodaj ścieżkę do klucza (Enter = pomiń, domyślny: ~/.ssh/id_rsa.pub): ")
+    if identity_file is None:
+        identity_file = ""
 
     add_entry(config_path, host, host_name, user, port, identity_file)
 
