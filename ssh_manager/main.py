@@ -2,7 +2,7 @@ import os
 import platform
 import curses
 from tabulate import tabulate
-from ssh_manager.ssh_operations import get_config_path, read_hosts, add_entry, update_entry, remove_entry, connect_via_ssh, change_config_path, get_user_input, clear_terminal
+from ssh_manager.ssh_operations import get_config_path, read_hosts, add_entry, update_entry, remove_entry, connect_via_ssh, get_user_input, clear_terminal
 
 config_path = get_config_path()
 
