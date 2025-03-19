@@ -263,53 +263,45 @@ def remove_host_ui(stdscr):
 
 
 def connect_host_ui(stdscr):
-    while True:  # Pętla, aby powracać do menu po rozłączeniu SSH
-        stdscr.clear()
-        hosts = read_hosts(config_path)  # Pobieramy dane hostów z pliku
+    curses.curs_set(0)  # Ukrycie kursora
+    hosts = read_hosts(config_path)  # Pobieramy dane hostów z pliku
 
-        if not hosts:
-            stdscr.addstr("Brak hostów w pliku config.\nWciśnij dowolny klawisz.")
-            stdscr.refresh()
-            stdscr.getch()
-            return
-
-        stdscr.addstr("Połącz z hostem:\n")
-        for idx, host in enumerate(hosts):
-            stdscr.addstr(f"  {idx + 1}. {host['Host']}\n")
-
-        stdscr.addstr("\nWybierz numer hosta (lub 0, aby wyjść): ")
-        stdscr.refresh()
-        curses.echo()
-
-        try:
-            # Odczytanie numeru hosta
-            choice = int(stdscr.getstr().decode("utf-8")) - 1
-            if choice == -1:
-                return  # Jeśli użytkownik wybierze 0, kończymy program
-
-            if 0 <= choice < len(hosts):
-                selected_host = hosts[choice]
-                stdscr.addstr(f"\nŁączenie z {selected_host['Host']}...\n")
-                stdscr.refresh()
-
-                # Kończymy curses przed uruchomieniem SSH
-                curses.endwin()
-
-                # Łączymy się przez SSH za pomocą danych z wybranego hosta
-                connect_via_ssh(selected_host)
-
-                # Po zakończeniu SSH, ponownie uruchamiamy interfejs curses
-                curses.wrapper(connect_host_ui)
-                return  # Zakończenie obecnej instancji funkcji
-            else:
-                stdscr.addstr("\nNieprawidłowy wybór!\n")
-        except ValueError:
-            stdscr.addstr("\nBłąd: musisz podać numer.\n")
-        except Exception as e:
-            stdscr.addstr(f"\nWystąpił błąd: {e}\n")
-
+    if not hosts:
+        stdscr.addstr("Brak hostów w pliku config.\nWciśnij dowolny klawisz.")
         stdscr.refresh()
         stdscr.getch()
+        return
+
+    selected_idx = 0  # Domyślnie wybór na pierwszym hoście
+
+    while True:
+        stdscr.clear()
+        stdscr.addstr("Połącz z hostem:\n", curses.A_BOLD)
+
+        for idx, host in enumerate(hosts):
+            if idx == selected_idx:
+                stdscr.addstr(f" > {host['Host']} <\n", curses.A_REVERSE)  # Zaznaczony host
+            else:
+                stdscr.addstr(f"   {host['Host']}\n")
+
+        stdscr.addstr("\n[Strzałki: Wybór | Enter: Połącz | Esc: Wyjście]")
+        stdscr.refresh()
+
+        key = stdscr.getch()  # Pobranie klawisza
+
+        if key == curses.KEY_UP and selected_idx > 0:
+            selected_idx -= 1  # Przesunięcie w górę
+        elif key == curses.KEY_DOWN and selected_idx < len(hosts) - 1:
+            selected_idx += 1  # Przesunięcie w dół
+        elif key == 10:  # Enter
+            stdscr.clear()
+            stdscr.addstr(f"\nŁączenie z {hosts[selected_idx]['Host']}...\n")
+            stdscr.refresh()
+            curses.endwin()  # Wyjście z trybu curses przed uruchomieniem SSH
+            connect_via_ssh(hosts[selected_idx])
+            return  # Powrót do głównej pętli `wrapper()`
+        elif key == 27:  # Esc - Wyjście do głównego menu
+            return
 
 
 if __name__ == "__main__":
