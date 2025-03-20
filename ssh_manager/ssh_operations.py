@@ -167,7 +167,7 @@ def get_user_input(stdscr, prompt, default=""):
     cursor_x = len(input_str)  # Pozycja kursora
 
     while True:
-        stdscr.move(stdscr.getyx()[0], len(prompt) + 11)  # Ustawiamy kursor za etykietą
+        stdscr.move(stdscr.getyx()[0], len(prompt) + 36)  # Ustawiamy kursor za etykietą
         stdscr.clrtoeol()  # Czyścimy linię, ale nie usuwamy labelki
         stdscr.addstr("".join(input_str) or " ")  # Rysujemy tekst (lub pusty znak, żeby kursor był widoczny)
         stdscr.move(stdscr.getyx()[0], len(prompt) + 11 + cursor_x)  # Ustawiamy kursor na właściwej pozycji
