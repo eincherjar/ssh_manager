@@ -11,6 +11,8 @@ def draw_menu(stdscr):
     global config_path
     curses.curs_set(0)
     current_row = 0
+    mode = "menu"  # Przechodzi na "connect" gdy wybieramy hosta
+    selected_host_idx = 0
 
     while True:
         stdscr.clear()
@@ -19,75 +21,100 @@ def draw_menu(stdscr):
 
         hosts = read_hosts(config_path)
 
-        if hosts:
-            stdscr.addstr("\n  >>> Lista hostów <<<\n", curses.A_UNDERLINE)
+        if mode == "menu":
+            stdscr.addstr("\n  >>> MENU <<<\n", curses.A_UNDERLINE)
+            menu_options = [
+                "  Dodaj nowy host   ",
+                "  Edytuj hosta      ",
+                "  Usuń hosta        ",
+                "  Połącz z hostem   ",  # Przechodzimy do trybu wyboru hosta
+                "  Podaj nową ścieżkę do config  ",
+                "  Wyjście           ",
+            ]
 
-            # Nagłówki tabeli
-            columns = ["ID", "Host", "HostName", "User", "Port", "IdentityFile"]
-            padding = 2  # Padding 2 spacje
-            min_width = 6  # Minimalna szerokość kolumn
+            for idx, option in enumerate(menu_options):
+                if idx == current_row:
+                    stdscr.addstr(f"  > {option} <  \n", curses.A_REVERSE)
+                else:
+                    stdscr.addstr(f"    {option}    \n")
 
-            # Obliczanie szerokości kolumn
-            col_widths = {col: max(len(col), min_width) for col in columns}  # Start od nagłówków
+        elif mode == "connect":
+            if not hosts:
+                stdscr.addstr("\nBrak hostów w pliku config.\nWciśnij dowolny klawisz.")
+                stdscr.refresh()
+                stdscr.getch()
+                mode = "menu"
+                continue
 
+            stdscr.addstr("\n  >>> Wybierz hosta do połączenia <<<\n", curses.A_UNDERLINE)
+
+            # Tabela hostów
+            columns = ["ID", "Host", "HostName", "User", "Port"]
+            padding = 2
+            min_width = 6
+
+            col_widths = {col: max(len(col), min_width) + padding for col in columns}
             for idx, host in enumerate(hosts, start=1):
-                col_widths["ID"] = max(col_widths["ID"], len(str(idx)))
-                col_widths["Host"] = max(col_widths["Host"], len(host.get("Host", "-")))
-                col_widths["HostName"] = max(col_widths["HostName"], len(host.get("HostName", "-")))
-                col_widths["User"] = max(col_widths["User"], len(host.get("User", "-")))
-                col_widths["Port"] = max(col_widths["Port"], len(host.get("Port", "-")))
-                col_widths["IdentityFile"] = max(col_widths["IdentityFile"], len(host.get("IdentityFile", "-")))
+                col_widths["ID"] = max(col_widths["ID"], len(str(idx)) + padding)
+                col_widths["Host"] = max(col_widths["Host"], len(host.get("Host", "-")) + padding)
+                col_widths["HostName"] = max(col_widths["HostName"], len(host.get("HostName", "-")) + padding)
+                col_widths["User"] = max(col_widths["User"], len(host.get("User", "-")) + padding)
+                col_widths["Port"] = max(col_widths["Port"], len(host.get("Port", "-")) + padding)
 
-            # Dodanie paddingu do szerokości kolumn
-            for col in col_widths:
-                col_widths[col] += padding * 2
-
-            # Formatowanie wiersza nagłówków
+            # Nagłówek tabeli
             header = "|".join(f" {col:^{col_widths[col] - 2}} " for col in columns)
             stdscr.addstr(f"  {header}\n", curses.A_BOLD)
-
-            # Separator
             separator = "+".join("-" * col_widths[col] for col in columns)
             stdscr.addstr(f"  {separator}\n")
 
-            # Wiersze tabeli
+            # Wiersze hostów
             for idx, host in enumerate(hosts, start=1):
                 row = "|".join(f" {str(host.get(col, '-') if col != 'ID' else idx):<{col_widths[col] - 2}} " for col in columns)
-                stdscr.addstr(f"  {row}\n")
+                if idx - 1 == selected_host_idx:
+                    stdscr.addstr(f"  > {row} <\n", curses.A_REVERSE)
+                else:
+                    stdscr.addstr(f"    {row}\n")
 
-        stdscr.addstr("\n  Wybierz opcję:\n\n")
-
-        # Opcje menu (bez numeracji)
-        menu_options = ["  Dodaj nowy host   ", "  Edytuj hosta      ", "  Usuń hosta        ", "  Połącz z hostem   ", "  Podaj nową ścieżkę do config  ", "  Wyjście           "]
-
-        for idx, option in enumerate(menu_options):
-            if idx == current_row:
-                stdscr.addstr(f"  > {option} <  \n", curses.A_REVERSE)
-            else:
-                stdscr.addstr(f"    {option}    \n")
+            stdscr.addstr("\n[Strzałki: Wybór | Enter: Połącz | Esc: Powrót]\n", curses.A_DIM)
 
         stdscr.refresh()
-
         key = stdscr.getch()
-        if key == curses.KEY_UP and current_row > 0:
-            current_row -= 1
-        elif key == curses.KEY_DOWN and current_row < len(menu_options) - 1:
-            current_row += 1
-        elif key in [10, 13]:  # Enter
-            if current_row == 0:
-                add_host_ui(stdscr)
-            elif current_row == 1:
-                edit_host_ui(stdscr)
-            elif current_row == 2:
-                remove_host_ui(stdscr)
-            elif current_row == 3:
-                connect_host_ui(stdscr)
-            elif current_row == 4:
-                new_path = change_config_path_ui(stdscr)
-                if new_path:
-                    config_path = new_path
-            elif current_row == 5:
-                break
+
+        if mode == "menu":
+            if key == curses.KEY_UP and current_row > 0:
+                current_row -= 1
+            elif key == curses.KEY_DOWN and current_row < len(menu_options) - 1:
+                current_row += 1
+            elif key in [10, 13]:  # Enter
+                if current_row == 0:
+                    add_host_ui(stdscr)
+                elif current_row == 1:
+                    edit_host_ui(stdscr)
+                elif current_row == 2:
+                    remove_host_ui(stdscr)
+                elif current_row == 3:
+                    mode = "connect"  # Przechodzimy do wyboru hosta
+                elif current_row == 4:
+                    new_path = change_config_path_ui(stdscr)
+                    if new_path:
+                        config_path = new_path
+                elif current_row == 5:
+                    break
+
+        elif mode == "connect":
+            if key == curses.KEY_UP and selected_host_idx > 0:
+                selected_host_idx -= 1
+            elif key == curses.KEY_DOWN and selected_host_idx < len(hosts) - 1:
+                selected_host_idx += 1
+            elif key in [10, 13]:  # Enter - Połączenie z hostem
+                stdscr.clear()
+                stdscr.addstr(f"\nŁączenie z {hosts[selected_host_idx]['Host']}...\n")
+                stdscr.refresh()
+                curses.endwin()  # Wyjście z trybu curses przed uruchomieniem SSH
+                connect_via_ssh(hosts[selected_host_idx])
+                return
+            elif key == 27:  # Esc - Powrót do menu
+                mode = "menu"
 
 
 def add_host_ui(stdscr):
