@@ -197,6 +197,8 @@ def get_user_input(stdscr, prompt, default=""):
             input_str.insert(cursor_x, chr(key))
             cursor_x += 1
 
+        curses.curs_set(0)  # Wyłączamy kursor
+
 
 def clear_terminal():
     """Czyści ekran terminala po rozłączeniu z SSH."""
