@@ -10,9 +10,9 @@ config_path = get_config_path()
 def draw_menu(stdscr):
     global config_path
     curses.curs_set(0)
-    current_row = 0
-    mode = "menu"  # Przechodzi na "connect" gdy wybieramy hosta
+    mode = "connect"  # Domyślnie tryb wyboru hosta
     selected_host_idx = 0
+    current_row = 0
 
     while True:
         stdscr.clear()
@@ -21,26 +21,9 @@ def draw_menu(stdscr):
 
         hosts = read_hosts(config_path)
 
-        if mode == "menu":
-            stdscr.addstr("\n  >>> MENU <<<\n", curses.A_UNDERLINE)
-            menu_options = [
-                "  Dodaj nowy host   ",
-                "  Edytuj hosta      ",
-                "  Usuń hosta        ",
-                "  Połącz z hostem   ",  # Przechodzimy do trybu wyboru hosta
-                "  Podaj nową ścieżkę do config  ",
-                "  Wyjście           ",
-            ]
-
-            for idx, option in enumerate(menu_options):
-                if idx == current_row:
-                    stdscr.addstr(f"  > {option} <  \n", curses.A_REVERSE)
-                else:
-                    stdscr.addstr(f"    {option}    \n")
-
-        elif mode == "connect":
+        if mode == "connect":
             if not hosts:
-                stdscr.addstr("\nBrak hostów w pliku config.\nWciśnij dowolny klawisz.")
+                stdscr.addstr("\nBrak hostów w pliku config.\nWciśnij dowolny klawisz, aby dodać nowy host.", curses.A_BOLD)
                 stdscr.refresh()
                 stdscr.getch()
                 mode = "menu"
@@ -75,12 +58,48 @@ def draw_menu(stdscr):
                 else:
                     stdscr.addstr(f"    {row}\n")
 
-            stdscr.addstr("\n[Strzałki: Wybór | Enter: Połącz | Esc: Powrót]\n", curses.A_DIM)
+            stdscr.addstr("\n[Strzałki: Wybór | Enter: Połącz | M: Menu | Q: Wyjście]\n", curses.A_DIM)
+
+        elif mode == "menu":
+            stdscr.addstr("\n  >>> MENU <<<\n", curses.A_UNDERLINE)
+            menu_options = [
+                "  Dodaj nowy host   ",
+                "  Edytuj hosta      ",
+                "  Usuń hosta        ",
+                "  Powrót do listy hostów  ",  # Powrót do domyślnej tabeli
+                "  Podaj nową ścieżkę do config  ",
+                "  Wyjście           ",
+            ]
+
+            for idx, option in enumerate(menu_options):
+                if idx == current_row:
+                    stdscr.addstr(f"  > {option} <  \n", curses.A_REVERSE)
+                else:
+                    stdscr.addstr(f"    {option}    \n")
+
+            stdscr.addstr("\n[Strzałki: Nawigacja | Enter: Wybór | Q: Wyjście]\n", curses.A_DIM)
 
         stdscr.refresh()
         key = stdscr.getch()
 
-        if mode == "menu":
+        if mode == "connect":
+            if key == curses.KEY_UP and selected_host_idx > 0:
+                selected_host_idx -= 1
+            elif key == curses.KEY_DOWN and selected_host_idx < len(hosts) - 1:
+                selected_host_idx += 1
+            elif key in [10, 13]:  # Enter - Połączenie z hostem
+                stdscr.clear()
+                stdscr.addstr(f"\nŁączenie z {hosts[selected_host_idx]['Host']}...\n")
+                stdscr.refresh()
+                curses.endwin()  # Wyjście z trybu curses przed uruchomieniem SSH
+                connect_via_ssh(hosts[selected_host_idx])
+                return
+            elif key in [ord("m"), ord("M")]:  # Przejście do menu
+                mode = "menu"
+            elif key in [ord("q"), ord("Q")]:  # Wyjście
+                break
+
+        elif mode == "menu":
             if key == curses.KEY_UP and current_row > 0:
                 current_row -= 1
             elif key == curses.KEY_DOWN and current_row < len(menu_options) - 1:
@@ -93,28 +112,15 @@ def draw_menu(stdscr):
                 elif current_row == 2:
                     remove_host_ui(stdscr)
                 elif current_row == 3:
-                    mode = "connect"  # Przechodzimy do wyboru hosta
+                    mode = "connect"  # Powrót do listy hostów
                 elif current_row == 4:
                     new_path = change_config_path_ui(stdscr)
                     if new_path:
                         config_path = new_path
                 elif current_row == 5:
                     break
-
-        elif mode == "connect":
-            if key == curses.KEY_UP and selected_host_idx > 0:
-                selected_host_idx -= 1
-            elif key == curses.KEY_DOWN and selected_host_idx < len(hosts) - 1:
-                selected_host_idx += 1
-            elif key in [10, 13]:  # Enter - Połączenie z hostem
-                stdscr.clear()
-                stdscr.addstr(f"\nŁączenie z {hosts[selected_host_idx]['Host']}...\n")
-                stdscr.refresh()
-                curses.endwin()  # Wyjście z trybu curses przed uruchomieniem SSH
-                connect_via_ssh(hosts[selected_host_idx])
-                return
-            elif key == 27:  # Esc - Powrót do menu
-                mode = "menu"
+            elif key in [ord("q"), ord("Q")]:  # Wyjście
+                break
 
 
 def add_host_ui(stdscr):
