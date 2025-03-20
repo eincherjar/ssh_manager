@@ -43,6 +43,7 @@ def draw_menu(stdscr):
                 col_widths["HostName"] = max(col_widths["HostName"], len(host.get("HostName", "-")) + padding)
                 col_widths["User"] = max(col_widths["User"], len(host.get("User", "-")) + padding)
                 col_widths["Port"] = max(col_widths["Port"], len(host.get("Port", "-")) + padding)
+                col_widths["IdentityFile"] = max(col_widths["IdentityFile"], len(host.get("IdentityFile", "-")) + padding)
 
             # Nagłówek tabeli
             header = "|".join(f" {col:^{col_widths[col] - 2}} " for col in columns)
