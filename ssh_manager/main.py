@@ -91,7 +91,7 @@ def draw_menu(stdscr):
 
 
 def add_host_ui(stdscr):
-    curses.curs_set(1)  # Ustawienie widoczności kursora
+    curses.curs_set(0)  # Ustawienie widoczności kursora
     stdscr.clear()
     stdscr.addstr("Dodawanie nowego hosta (ESC, aby wrócić):\n", curses.A_BOLD)
 
@@ -115,7 +115,6 @@ def add_host_ui(stdscr):
 
 
 def edit_host_ui(stdscr):
-    # dodac anulowanie czyli esc
     curses.curs_set(0)
     curses.start_color()
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
@@ -320,6 +319,8 @@ def change_config_path_ui(stdscr):
             new_path = new_path[:-1]  # Usuwamy ostatni znak
         elif 32 <= key <= 126:  # Obsługuje tylko czytelne znaki (spacja - ~)
             new_path += chr(key)
+
+        curses.curs_set(0)  # Ustawienie widoczności kursora
 
     new_path = new_path.strip()
 
