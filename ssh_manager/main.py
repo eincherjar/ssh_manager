@@ -32,7 +32,7 @@ def draw_menu(stdscr):
             stdscr.addstr("\n  >>> Wybierz hosta do połączenia <<<\n", curses.A_UNDERLINE)
 
             # Tabela hostów
-            columns = ["ID", "Host", "HostName", "User", "Port"]
+            columns = ["ID", "Host", "HostName", "User", "Port", "IdentityFile"]
             padding = 2
             min_width = 6
 
