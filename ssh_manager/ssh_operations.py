@@ -160,30 +160,29 @@ def connect_via_ssh(host):
 
 def get_user_input(stdscr, prompt, default=""):
     """Pozwala edytować istniejącą wartość, usunąć ją lub pozostawić bez zmian"""
-    stdscr.addstr("\n" + prompt + ": ")  # Wyświetlamy labelkę
+    stdscr.addstr("\n" + prompt + " (ESC = Anuluj): ")  # Dodajemy informację o ESC
     stdscr.refresh()
 
-    input_str = list(default)  # Domyślny tekst jako lista znaków (można edytować)
-    cursor_x = len(input_str)  # Pozycja kursora
+    input_str = list(default)
+    cursor_x = len(input_str)
 
     while True:
-        stdscr.move(stdscr.getyx()[0], len(prompt) + 2)  # Przesuwamy kursor za labelkę
-        stdscr.clrtoeol()  # Czyścimy tylko wartość, nie labelkę
-        stdscr.addstr("".join(input_str))  # Rysujemy wpisywany tekst
-        stdscr.move(stdscr.getyx()[0], len(prompt) + 2 + cursor_x)  # Ustawiamy kursor w odpowiednim miejscu
+        stdscr.move(stdscr.getyx()[0], len(prompt) + 11)  # Przesuwamy kursor za labelkę
+        stdscr.clrtoeol()
+        stdscr.addstr("".join(input_str))
+        stdscr.move(stdscr.getyx()[0], len(prompt) + 11 + cursor_x)
         stdscr.refresh()
 
         key = stdscr.getch()
 
         if key in [10, 13]:  # ENTER = akceptacja wartości
-            input_val = "".join(input_str).strip()  # Zwracamy wartość z usuniętymi spacjami
-            if input_val == "":  # Jeśli pole jest puste, zwracamy pusty ciąg
-                return ""
-            return input_val  # Jeśli użytkownik wprowadził coś, zwracamy nową wartość
+            return "".join(input_str).strip()
         elif key in [curses.KEY_BACKSPACE, 127, 8]:  # BACKSPACE
             if cursor_x > 0:
                 cursor_x -= 1
                 input_str.pop(cursor_x)
+        elif key == 27:  # ESC = anulowanie edycji
+            return None
         elif 32 <= key <= 126:  # Normalne znaki ASCII
             input_str.insert(cursor_x, chr(key))
             cursor_x += 1
