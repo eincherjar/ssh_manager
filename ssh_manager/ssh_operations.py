@@ -159,6 +159,7 @@ def connect_via_ssh(host):
 
 
 def get_user_input(stdscr, prompt, default=""):
+    curses.curs_set(1)
     """Pozwala edytować istniejącą wartość, usunąć ją lub pozostawić bez zmian."""
     stdscr.addstr("\n" + prompt + " (ENTER = Zatwierdź, ESC = Anuluj): ")
     stdscr.refresh()
@@ -170,7 +171,7 @@ def get_user_input(stdscr, prompt, default=""):
         stdscr.move(stdscr.getyx()[0], len(prompt) + 36)  # Ustawiamy kursor za etykietą
         stdscr.clrtoeol()  # Czyścimy linię, ale nie usuwamy labelki
         stdscr.addstr("".join(input_str) or " ")  # Rysujemy tekst (lub pusty znak, żeby kursor był widoczny)
-        stdscr.move(stdscr.getyx()[0], len(prompt) + 11 + cursor_x)  # Ustawiamy kursor na właściwej pozycji
+        stdscr.move(stdscr.getyx()[0], len(prompt) + 36 + cursor_x)  # Ustawiamy kursor na właściwej pozycji
         stdscr.refresh()
 
         key = stdscr.getch()
