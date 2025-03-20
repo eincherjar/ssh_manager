@@ -159,17 +159,17 @@ def connect_via_ssh(host):
 
 
 def get_user_input(stdscr, prompt, default=""):
-    curses.curs_set(1)
-    """Pozwala edytować istniejącą wartość, usunąć ją lub pozostawić bez zmian."""
+    curses.curs_set(1)  # Włączamy kursor
+
     stdscr.addstr("\n" + prompt + " (ENTER = Zatwierdź, ESC = Anuluj): ")
     stdscr.refresh()
 
-    input_str = list(default)  # Domyślny tekst jako lista znaków (można edytować)
+    input_str = list(default)  # Zamieniamy domyślną wartość na listę znaków (dla łatwiejszej edycji)
     cursor_x = len(input_str)  # Pozycja kursora
 
     while True:
         stdscr.move(stdscr.getyx()[0], len(prompt) + 36)  # Ustawiamy kursor za etykietą
-        stdscr.clrtoeol()  # Czyścimy linię, ale nie usuwamy labelki
+        stdscr.clrtoeol()  # Czyścimy linię, ale nie usuwamy etykiety
         stdscr.addstr("".join(input_str) or " ")  # Rysujemy tekst (lub pusty znak, żeby kursor był widoczny)
         stdscr.move(stdscr.getyx()[0], len(prompt) + 36 + cursor_x)  # Ustawiamy kursor na właściwej pozycji
         stdscr.refresh()
@@ -178,12 +178,21 @@ def get_user_input(stdscr, prompt, default=""):
 
         if key in [10, 13]:  # ENTER = zatwierdzenie wartości
             return "".join(input_str).strip()  # Jeśli pole jest puste, zwracamy pusty ciąg
+        elif key == 27:  # ESC = anulowanie edycji
+            return default  # Przywracamy oryginalną wartość
         elif key in [curses.KEY_BACKSPACE, 127, 8]:  # BACKSPACE
             if cursor_x > 0:
                 cursor_x -= 1
                 input_str.pop(cursor_x)
-        elif key == 27:  # ESC = anulowanie edycji
-            return default  # Przywracamy oryginalną wartość
+        elif key == curses.KEY_DC:  # DELETE
+            if cursor_x < len(input_str):
+                input_str.pop(cursor_x)
+        elif key == curses.KEY_LEFT:  # Strzałka w lewo
+            if cursor_x > 0:
+                cursor_x -= 1
+        elif key == curses.KEY_RIGHT:  # Strzałka w prawo
+            if cursor_x < len(input_str):
+                cursor_x += 1
         elif 32 <= key <= 126:  # Normalne znaki ASCII
             input_str.insert(cursor_x, chr(key))
             cursor_x += 1
